@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DyrosBoltGuiWidget</class>
+ <widget class="QWidget" name="DyrosBoltGuiWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dyros Bolt GUI</string>
+  </property>
+  <property name="windowFilePath">
+   <string/>
+  </property>
+  <widget class="QPushButton" name="joint_btn">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>0</y>
+     <width>100</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Joint
+Command</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="motion_btn">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>0</y>
+     <width>100</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Motion
+Command</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="status_btn">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>100</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>State</string>
+   </property>
+  </widget>
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>50</y>
+     <width>600</width>
+     <height>750</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="STAT"/>
+   <widget class="QWidget" name="JOINT"/>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>status_btn</tabstop>
+  <tabstop>joint_btn</tabstop>
+  <tabstop>motion_btn</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
