@@ -1,0 +1,9 @@
+<launch>
+  <arg name="run_mode" />
+  <!-- <node name="dyros_bolt_smach" pkg="dyros_bolt_smach" type="mini_drc_mission_toplevel.py" respawn="false" output="screen"> -->
+    <!-- <param name="run_mode" type="string" value="$(arg run_mode)" /> -->
+  <!-- </node> -->
+  <node name="dyros_bolt_controller" pkg="dyros_bolt_controller" type="dyros_bolt_controller" required="true" respawn="false" output="screen">
+    <param name="run_mode" type="string" value="$(arg run_mode)" />
+  </node>
+</launch>
