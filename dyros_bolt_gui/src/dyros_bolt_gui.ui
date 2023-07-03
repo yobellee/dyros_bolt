@@ -67,10 +67,188 @@ Command</string>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="STAT"/>
-   <widget class="QWidget" name="JOINT"/>
+   <widget class="QWidget" name="JOINT">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>320</width>
+       <height>320</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Joint Command</string>
+     </property>
+     <widget class="QWidget" name="gridLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>301</width>
+        <height>281</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout" columnstretch="8,12,1" columnminimumwidth="10,0,0">
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="fl_haa_val">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="fl_hfe_val"/>
+       </item>
+       <item row="3" column="1">
+        <widget class="QDoubleSpinBox" name="fr_haa_val"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="right3">
+         <property name="text">
+          <string>Right Knee</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="left3">
+         <property name="text">
+          <string>Left Knee</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDoubleSpinBox" name="fl_kfe_val"/>
+       </item>
+       <item row="5" column="1">
+        <widget class="QDoubleSpinBox" name="fr_kfe_val"/>
+       </item>
+       <item row="4" column="1">
+        <widget class="QDoubleSpinBox" name="fr_hfe_val"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="right1">
+         <property name="text">
+          <string>Right Hip AA</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="left2">
+         <property name="text">
+          <string>Left Hip FE</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="right2">
+         <property name="text">
+          <string>Right Hip FE</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="left1">
+         <property name="text">
+          <string>Left Hip AA</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="fl_haa">
+         <property name="text">
+          <string>Set</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>5</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="fl_hfe">
+         <property name="text">
+          <string>Set</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>5</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="fl_kfe">
+         <property name="text">
+          <string>Set</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>5</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QPushButton" name="fr_haa">
+         <property name="text">
+          <string>Set</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>5</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QPushButton" name="fr_hfe">
+         <property name="text">
+          <string>Set</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>5</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QPushButton" name="fr_kfe">
+         <property name="text">
+          <string>Set</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>5</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="MOTION"/>
   </widget>
  </widget>
  <tabstops>
