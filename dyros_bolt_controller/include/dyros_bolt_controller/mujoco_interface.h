@@ -54,6 +54,7 @@ private:
   Eigen::Vector6d mujoco_virtual_;
 
 public:
+  std::string ctrl_mode;
   bool simulation_running_;
   bool sim_runnung;
   bool mujoco_ready = false;

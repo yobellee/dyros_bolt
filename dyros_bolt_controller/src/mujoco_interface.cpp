@@ -5,6 +5,8 @@ namespace dyros_bolt_controller {
 mujoco_interface::mujoco_interface(ros::NodeHandle &nh, double Hz):
     ControlBase(nh,Hz), rate_(Hz), dyn_hz(Hz)
 {
+    nh.param<std::string>("ctrl_mode", ctrl_mode, "torque");
+
     simulation_running_= true;
     mujoco_joint_set_pub_=nh.advertise<mujoco_ros_msgs::JointSet>("/mujoco_ros_interface/joint_set",100);
     mujoco_sim_command_pub_=nh.advertise<std_msgs::String>("/mujoco_ros_interface/sim_command_con2sim",100);
@@ -178,19 +180,39 @@ void mujoco_interface::compute()
 
 void mujoco_interface::writeDevice()
 {
-  mujoco_joint_set_msg_.MODE = 0;
-
-  if(mujoco_init_receive == true)
+  if (ctrl_mode == "position")
   {
-    for(int i=0;i<total_dof_;i++)
+    mujoco_joint_set_msg_.MODE = 0;
+
+    if(mujoco_init_receive == true)
     {
-     mujoco_joint_set_msg_.position[i] = desired_q_(i);
+      for(int i=0;i<total_dof_;i++)
+      {
+        mujoco_joint_set_msg_.position[i] = desired_q_(i);
+      }
+      mujoco_joint_set_msg_.header.stamp = ros::Time::now();
+      mujoco_joint_set_msg_.time = mujoco_sim_time;
+      // mujoco_joint_set_msg_.time = ControlBase::currentTime();
+      mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
+      mujoco_sim_last_time = mujoco_sim_time;
     }
-     mujoco_joint_set_msg_.header.stamp = ros::Time::now();
-     mujoco_joint_set_msg_.time = mujoco_sim_time;
-     // mujoco_joint_set_msg_.time = ControlBase::currentTime();
-     mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
-     mujoco_sim_last_time = mujoco_sim_time;
+  }
+  else if (ctrl_mode == "torque")
+  {
+    mujoco_joint_set_msg_.MODE = 1;
+
+    if(mujoco_init_receive == true)
+    {
+      for(int i=0;i<total_dof_;i++)
+      {
+        mujoco_joint_set_msg_.torque[i] = desired_torque_(i);
+      }
+      mujoco_joint_set_msg_.header.stamp = ros::Time::now();
+      mujoco_joint_set_msg_.time = mujoco_sim_time;
+      // mujoco_joint_set_msg_.time = ControlBase::currentTime();
+      mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
+      mujoco_sim_last_time = mujoco_sim_time;
+    }
   }
 }
 

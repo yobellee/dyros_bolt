@@ -88,16 +88,16 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
     // q_virtual_dot_ = qdot;
     // q_virtual_ddot_ = qddot;
 
-    
-    // rd_.UpdateKinematics(q, qdot, qddot, true);
 
-    // rd_.AddContactConstraint("left_foot",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
-    // rd_.AddContactConstraint("right_foot",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
+    rd_.UpdateKinematics(q, qdot, qddot, true);
 
-    // rd_.SetContact(1,1);
-    // rd_.CalcGravCompensation();
-    // rd_.CalcContactRedistribute();
-    // VectorXd command_Torque = rd_.torque_grav_ + rd_.torque_contact_;
+    rd_.AddContactConstraint("left_foot",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
+    rd_.AddContactConstraint("right_foot",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
+
+    rd_.SetContact(1,1);
+    rd_.CalcGravCompensation();
+    rd_.CalcContactRedistribute();
+    VectorXd command_Torque = rd_.torque_grav_ + rd_.torque_contact_;
 
 
     getInertiaMatrixDoF(&full_inertia_mat_);

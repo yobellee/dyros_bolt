@@ -116,7 +116,7 @@ void ControlBase::compute()
   // walking_controller_.updateControlMask(control_mask_);
 
   joint_controller_.writeDesired(control_mask_, desired_q_);
-  std::cout << "q_: " << desired_q_ << std::endl;
+  // std::cout << "q_: " << desired_q_ << std::endl;
   // walking_controller_.writeDesired(control_mask_, desired_q_);
 
   tick_ ++;
