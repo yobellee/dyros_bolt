@@ -84,6 +84,7 @@ void JointController::writeDesired(const unsigned int *mask, VectorQd& desired_q
     if(isAvailable(&mask[i]))
     {
       desired_q(i) = desired_q_(i);
+      std::cout<<"joint("<<i<<"): "<<desired_q(i)<<std::endl;
     }
   }
 }

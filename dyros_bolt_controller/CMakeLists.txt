@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(dyros_bolt_controller)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++11 -g)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -19,7 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   mujoco_ros_msgs
 )
-find_package(Eigen3 REQUIRED)
+find_package(dwbc REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
 ## System dependencies are found with CMake's conventions
@@ -190,6 +191,7 @@ target_link_libraries(dyros_bolt_controller
   dyros_bolt_controller_lib
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
+  dwbc
 )
 
 #############

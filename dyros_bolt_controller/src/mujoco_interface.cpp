@@ -69,7 +69,7 @@ void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr 
   {
     for(int i=0;i<total_dof_;i++)
     {
-      desired_q_(i)=q_(i);
+      desired_q_(i)=q_(i); 
     }
     mujoco_init_receive = true;
   }
@@ -77,56 +77,55 @@ void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr 
 
 void mujoco_interface::sensorStateCallback(const mujoco_ros_msgs::SensorStateConstPtr &msg)
 {
+  Eigen::Vector6d left_foot_ft, right_foot_ft;
+    for(int i=0;i<msg->sensor.size();i++){
+        // if(msg->sensor[i].name=="L_Force"){
+        //     for(int j=0;j<3;j++){
+        //         left_foot_ft(j) = msg->sensor[i].data[j];
+        //     }
 
-  // Eigen::Vector6d left_foot_ft, right_foot_ft;
-  //   for(int i=0;i<msg->sensor.size();i++){
-  //       if(msg->sensor[i].name=="L_Force"){
-  //           for(int j=0;j<3;j++){
-  //              left_foot_ft(j) = msg->sensor[i].data[j];
-  //           }
+        // }
+        // if(msg->sensor[i].name=="R_Force"){
+        //     for(int j=0;j<3;j++){
+        //         right_foot_ft(j) = msg->sensor[i].data[j];
+        //     }
 
-  //       }
-  //       if(msg->sensor[i].name=="R_Force"){
-  //           for(int j=0;j<3;j++){
-  //               right_foot_ft(j) = msg->sensor[i].data[j];
-  //           }
+        // }
+        // if(msg->sensor[i].name=="L_Torque"){
+        //     for(int j=0;j<3;j++){
+        //         left_foot_ft(j+3) = msg->sensor[i].data[j];
+        //     }
 
-  //       }
-  //       if(msg->sensor[i].name=="L_Torque"){
-  //           for(int j=0;j<3;j++){
-  //               left_foot_ft(j+3) = msg->sensor[i].data[j];
-  //           }
+        // }
+        // if(msg->sensor[i].name=="R_Torque"){
+        //     for(int j=0;j<3;j++){
+        //         right_foot_ft(j+3) = msg->sensor[i].data[j];
+        //     }
 
-  //       }
-  //       if(msg->sensor[i].name=="R_Torque"){
-  //           for(int j=0;j<3;j++){
-  //               right_foot_ft(j+3) = msg->sensor[i].data[j];
-  //           }
+        // }
+        if(msg->sensor[i].name=="Acc_Pelvis_IMU"){
+            for(int j=0;j<3;j++){
+                accelometer_(j) = msg->sensor[i].data[j];
+            }
 
-  //       }
-  //       if(msg->sensor[i].name=="Acc_Pelvis_IMU"){
-  //           for(int j=0;j<3;j++){
-  //              accelometer_(j) = msg->sensor[i].data[j];
-  //           }
+        }
+        if(msg->sensor[i].name=="Gyro_Pelvis_IMU"){
+            for(int j=0;j<3;j++){
+                gyro_(j) = msg->sensor[i].data[j];
+            }
 
-  //       }
-  //       if(msg->sensor[i].name=="Gyro_Pelvis_IMU"){
-  //           for(int j=0;j<3;j++){
-  //               gyro_(j) = msg->sensor[i].data[j];
-  //           }
+        }
+        if(msg->sensor[i].name=="Magnet_Pelvis_IMU"){
+            for(int j=0;j<3;j++){
+            //    right_foot_ft(j+3) = msg->sensor[i].data[j];
+            }
 
-  //       }
-  //       if(msg->sensor[i].name=="Magnet_Pelvis_IMU"){
-  //           for(int j=0;j<3;j++){
-  //           //    right_foot_ft(j+3) = msg->sensor[i].data[j];
-  //           }
+        }
 
-  //       }
+    }
 
-  //   }
-
-  //  left_foot_ft_ = DyrosMath::lowPassFilter<6>(left_foot_ft, left_foot_ft_, 1.0 / 200, 0.05);
-  //  right_foot_ft_ = DyrosMath::lowPassFilter<6>(right_foot_ft, right_foot_ft_, 1.0 / 200, 0.05);
+  // left_foot_ft_ = DyrosMath::lowPassFilter<6>(left_foot_ft, left_foot_ft_, 1.0 / 200, 0.05);
+  // right_foot_ft_ = DyrosMath::lowPassFilter<6>(right_foot_ft, right_foot_ft_, 1.0 / 200, 0.05);
 }
 
 void mujoco_interface::simCommandCallback(const std_msgs::StringConstPtr &msg)
@@ -167,9 +166,9 @@ void mujoco_interface::simCommandCallback(const std_msgs::StringConstPtr &msg)
 
 void mujoco_interface::update()
 {
-    ControlBase::update();
-    ControlBase::model_.updateMujCom(mujoco_virtual_);
-    ControlBase::model_.updateMujComDot(mujoco_virtual_dot_);
+  ControlBase::update();
+  ControlBase::model_.updateMujCom(mujoco_virtual_);
+  ControlBase::model_.updateMujComDot(mujoco_virtual_dot_);
 }
 
 void mujoco_interface::compute()

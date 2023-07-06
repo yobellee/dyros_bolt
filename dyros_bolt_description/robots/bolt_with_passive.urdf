@@ -9,13 +9,13 @@
   </mujoco>
   
   <!-- This file is based on: https://atlas.is.localnet/confluence/display/AMDW/Quadruped+URDF+Files -->
-  <link name="world"/>
-  <joint name = "virtual" type="floating">
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link ="world"/>
-    <child link="base_link"/>
+  <!-- <link name="world"/> -->
+  <!-- <joint name = "virtual" type="floating"> -->
+    <!-- <origin xyz="0 0 0" rpy="0 0 0" /> -->
+    <!-- <parent link ="world"/> -->
+    <!-- <child link="base_link"/> -->
     <!-- <limit effort="30" velocity="1.0" lower="-3.14" upper="3.14"/> -->
-  </joint>
+  <!-- </joint> -->
 
   <link name="base_link">
     <!-- BASE LINK INERTIAL -->
@@ -217,7 +217,7 @@
     </inertial>
     <!-- FOOT VISUAL -->
     <visual>
-      <origin rpy="0 2.35 0." xyz="0 0 -0.01"/>
+      <origin rpy="0 1.570796327 0" xyz="0 0 -0.01"/>
       <geometry>
         <cylinder length="0.06" radius="0.0085"/>
       </geometry>
@@ -227,7 +227,7 @@
     </visual>
     <!-- FOOT COLLISION -->
     <collision>
-      <origin rpy="0 2.35 0." xyz="0 0 -0.01"/>
+      <origin rpy="0 1.570796327 0" xyz="0 0 -0.01"/>
       <geometry>
         <cylinder length="0.06" radius="0.0085"/>
       </geometry>
@@ -404,7 +404,7 @@
     </inertial>
     <!-- FOOT VISUAL -->
     <visual>
-      <origin rpy="0 2.35 0." xyz="0 0 -0.01"/>
+      <origin rpy="0 1.570796327 0.0" xyz="0 0 -0.01"/>
       <geometry>
         <cylinder length="0.06" radius="0.0085"/>
       </geometry>
@@ -414,7 +414,7 @@
     </visual>
     <!-- FOOT COLLISION -->
     <collision>
-      <origin rpy="0 2.35 0." xyz="0 0 -0.01"/>
+      <origin rpy="0 1.570796327 0.0" xyz="0 0 -0.01"/>
       <geometry>
         <cylinder length="0.06" radius="0.0085"/>
       </geometry>

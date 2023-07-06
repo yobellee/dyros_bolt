@@ -2,10 +2,13 @@
     <option timestep='0.0005' iterations="50" tolerance="1e-5" solver="Newton" jacobian="dense" cone="elliptic" noslip_iterations="30" noslip_tolerance="1e-5"/>
     <size njmax="8000" nconmax="4000"/>
     <compiler angle="radian" meshdir="../meshes/stl/" balanceinertia="true"/>
-	<option gravity= "0 0 0"/>
+	<!-- <option gravity= "0 0 0"/> -->
 
     <default>
         <motor ctrllimited="true" ctrlrange="-300 300"/>
+        <default class="position">
+			<position ctrllimited="true" forcelimited="false" ></position> 
+    	</default>
         <default class="viz">
             <geom contype="0" conaffinity="0" group="1" type="mesh" rgba=".6 .6 .7 1" />
         </default>

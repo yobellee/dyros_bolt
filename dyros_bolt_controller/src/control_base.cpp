@@ -86,10 +86,11 @@ void ControlBase::update()
     q_ext_offset_ = q_ext_ + extencoder_offset_;
   }
   DyrosMath::toEulerAngle(imu_data_.x(), imu_data_.y(), imu_data_.z(), imu_data_.w(), imu_grav_rpy_(0), imu_grav_rpy_(1), imu_grav_rpy_(2));
-//   model_.updateSensorData(right_foot_ft_, left_foot_ft_, q_ext_offset_, accelometer_, gyro_, imu_grav_rpy_);
+  model_.updateSensorData(right_foot_ft_, left_foot_ft_, q_ext_offset_, accelometer_, gyro_, imu_grav_rpy_);
 
 
-  Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1> q_vjoint, q_vjoint_dot;
+  Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF+1, 1> q_vjoint;
+  Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1> q_vjoint_dot, q_vjoint_ddot;
   q_vjoint.setZero();
   q_vjoint_dot.setZero();
   q_vjoint.segment<DyrosBoltModel::MODEL_DOF>(6) = q_.head<DyrosBoltModel::MODEL_DOF>();
@@ -97,7 +98,9 @@ void ControlBase::update()
   q_dot_filtered_ = q_dot_;//DyrosMath::lowPassFilter<DyrosBoltModel::HW_TOTAL_DOF>(q_dot_, q_dot_filtered_, 1.0 / Hz_, 0.05);
   q_vjoint_dot.segment<DyrosBoltModel::MODEL_DOF>(6) = q_dot_filtered_.head<DyrosBoltModel::MODEL_DOF>();
 
-  model_.updateKinematics(q_vjoint, q_vjoint_dot);  // Update end effector positions and Jacobians
+  q_vjoint_ddot.setZero();
+
+  model_.updateKinematics(q_vjoint, q_vjoint_dot, q_vjoint_ddot);  // Update end effector positions and Jacobians
 
 }
 
@@ -113,6 +116,7 @@ void ControlBase::compute()
   // walking_controller_.updateControlMask(control_mask_);
 
   joint_controller_.writeDesired(control_mask_, desired_q_);
+  std::cout << "q_: " << desired_q_ << std::endl;
   // walking_controller_.writeDesired(control_mask_, desired_q_);
 
   tick_ ++;
