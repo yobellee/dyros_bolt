@@ -15,6 +15,7 @@ int main(int argc, char **argv)
     std::string mode;
     nh.param<std::string>("run_mode", mode, "simulation");
     ControlBase *ctr_obj;
+    ROS_INFO("!!!!!!!");
     
 
     double Hz;

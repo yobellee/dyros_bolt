@@ -6,6 +6,7 @@ namespace dyros_bolt_controller
 ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   is_first_boot_(true), Hz_(Hz), control_mask_{}, total_dof_(DyrosBoltModel::HW_TOTAL_DOF),shutdown_flag_(false),
   joint_controller_(q_, q_dot_filtered_, control_time_),
+  jumping_controller_(model_, q_, q_dot_filtered_, Hz, control_time_),
   joint_control_as_(nh, "/dyros_bolt/joint_control", false)
 {
   makeIDInverseList();
@@ -106,18 +107,15 @@ void ControlBase::update()
 
 void ControlBase::compute()
 {
-  // joint_controller_.setTarget(model_.getIndex("FL_KFE"), 1.57, 2.0);
-  // joint_controller_.setEnable(model_.getIndex("FL_KFE"), true);      
 
   joint_controller_.compute();
-  // walking_controller_.compute();
+  jumping_controller_.compute();
 
   joint_controller_.updateControlMask(control_mask_);
-  // walking_controller_.updateControlMask(control_mask_);
+  jumping_controller_.updateControlMask(control_mask_);
 
   joint_controller_.writeDesired(control_mask_, desired_q_);
-  // std::cout << "q_: " << desired_q_ << std::endl;
-  // walking_controller_.writeDesired(control_mask_, desired_q_);
+  jumping_controller_.writeDesired(control_mask_, desired_q_);
 
   tick_ ++;
   control_time_ = tick_ / Hz_;

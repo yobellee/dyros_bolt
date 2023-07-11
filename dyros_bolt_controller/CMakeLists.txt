@@ -141,6 +141,7 @@ file(GLOB BRIDGE_SRC
 file(GLOB CONTROLLER_SRC
     "src/dyros_bolt_model.cpp"
     "src/joint_controller.cpp"
+    "src/jumping_controller.cpp"
     )
 
 ## Declare a C++ library

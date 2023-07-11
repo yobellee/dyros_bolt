@@ -41,9 +41,9 @@
                         <joint name="FL_KFE" pos="0 0 0" axis="0 1 0" limited="true" range="-10 10" />
                         <geom type="mesh" rgba="0.0 0.0 0.0 1" mesh="lower_leg_200mm_left_side" />
                         <body name="FL_FOOT" pos="0 0.008 -0.2">
-                            <inertial pos="0 0 0.00035767" quat="0.707107 0 0 0.707107" mass="0.001" diaginertia="8.4e-07 5.7e-07 5.3e-07" />
+                            <inertial pos="0 0 0.00035767" quat="0.707107 0 0 0.707107" mass="0.012" diaginertia="1.5e-07 1.0e-05 0.98e-05" />
                             <joint name="FL_ANKLE" pos="0 0 0" axis="0 1 0" limited="false" range="-3.14 3.14" />
-                            <geom size="0.0085 0.03" pos="0 0 -0.01" quat="0.707107 0 0.707107 0" type="cylinder" rgba="0.0 0.0 0.0 1" />
+                            <geom size="0.008 0.05" pos="0 0 -0.01" quat="0.707107 0 0.707107 0" type="cylinder" rgba="0.0 0.0 0.0 1" />
                         </body>
                     </body>
                 </body>
@@ -61,9 +61,9 @@
                         <joint name="FR_KFE" pos="0 0 0" axis="0 1 0" limited="true" range="-10 10" />
                         <geom type="mesh" rgba="0.0 0.0 0.0 1" mesh="lower_leg_200mm_right_side" />
                         <body name="FR_FOOT" pos="0 -0.008 -0.2">
-                            <inertial pos="0 0 0.00035767" quat="0.707107 0 0 0.707107" mass="0.001" diaginertia="8.4e-07 5.7e-07 5.3e-07" />
+                            <inertial pos="0 0 0.00035767" quat="0.707107 0 0 0.707107" mass="0.012" diaginertia="1.5e-07 1.0e-05 0.98e-05" />
                             <joint name="FR_ANKLE" pos="0 0 0" axis="0 1 0" limited="false" range="-3.14 3.14" />
-                            <geom size="0.0085 0.03" pos="0 0 -0.01" quat="0.707107 0 0.707107 0" type="cylinder" rgba="0.0 0.0 0.0 1" />
+                            <geom size="0.008 0.05" pos="0 0 -0.01" quat="0.707107 0 0.707107 0" type="cylinder" rgba="0.0 0.0 0.0 1" />
                         </body>
                     </body>
                 </body>
@@ -72,16 +72,16 @@
     </worldbody>
 
     <actuator>
-		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_HAA" joint="FL_HAA" kp = "100"/> 
-		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_HFE" joint="FL_HFE" kp = "100"/> 
-		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_KFE" joint="FL_KFE" kp = "100"/> 
-		<!-- <position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_ANKLE" joint="FL_ANKLE" kp = "50"/>  -->
-		<motor name="FL_ANKLE" joint="FL_ANKLE" /> 
-		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_HAA" joint="FR_HAA" kp = "100"/> 
-		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_HFE" joint="FR_HFE" kp = "100"/> 
-		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_KFE" joint="FR_KFE" kp = "100"/> 
-		<!-- <position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_ANKLE" joint="FR_ANKLE" kp = "50"/>  -->
-		<motor name="FR_ANKLE" joint="FR_ANKLE" /> 
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_HAA" joint="FL_HAA" kp = "30"/> 
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_HFE" joint="FL_HFE" kp = "30"/> 
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_KFE" joint="FL_KFE" kp = "30"/> 
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FL_ANKLE" joint="FL_ANKLE" kp = "15"/> 
+		<!-- <motor name="FL_ANKLE" joint="FL_ANKLE" />  -->
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_HAA" joint="FR_HAA" kp = "30"/> 
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_HFE" joint="FR_HFE" kp = "30"/> 
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_KFE" joint="FR_KFE" kp = "30"/> 
+		<position class="position" ctrllimited="true" ctrlrange="-3 3" name="FR_ANKLE" joint="FR_ANKLE" kp = "15"/> 
+		<!-- <motor name="FR_ANKLE" joint="FR_ANKLE" />  -->
     </actuator>  
 
     <sensor>
@@ -95,9 +95,10 @@
     </sensor>
 
     <keyframe>
-        <key name="front" time="0" qpos="0 0 0.5 1 0 0 0
+        <key name="front" time="0" qpos="0 0 0.43 1 0 0 0
                                         
-                                        0 0 0 0 0 0 0 0"/>
+                                        0 0.436332313 -0.872664626 0.436332313
+                                        0 0.436332313 -0.872664626 0.436332313"/>
     </keyframe>
 </mujoco>
 <!-- 0 0 0 -0.785398163 0 0 0 -0.785398163"/> -->

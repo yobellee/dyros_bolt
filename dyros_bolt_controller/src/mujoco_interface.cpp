@@ -51,6 +51,7 @@ void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr 
       if(DyrosBoltModel::JOINT_NAME[i] == msg->name[j].data())
       {
         q_(i) = msg->position[j];
+        // std::cout << DyrosBoltModel::JOINT_NAME[i] << ": " << q_(i) << std::endl;
         // q_virtual_(i+6) = msg->position[j];
         q_dot_(i) = msg->velocity[j];
         // q_dot_virtual_(i+6) = msg->velocity[j];
@@ -205,7 +206,7 @@ void mujoco_interface::writeDevice()
     {
       for(int i=0;i<total_dof_;i++)
       {
-        mujoco_joint_set_msg_.torque[i] = desired_torque_(i);
+        mujoco_joint_set_msg_.torque[i] = model_.command_Torque(i);
       }
       mujoco_joint_set_msg_.header.stamp = ros::Time::now();
       mujoco_joint_set_msg_.time = mujoco_sim_time;

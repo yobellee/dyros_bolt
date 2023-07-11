@@ -37,6 +37,7 @@
 #include "math_type_define.h"
 #include "dyros_bolt_controller/controller.h"
 #include "dyros_bolt_controller/joint_controller.h"
+#include "dyros_bolt_controller/jumping_controller.h"
 #include "dyros_bolt_controller/dyros_bolt_model.h"
 
 
@@ -134,6 +135,7 @@ protected:
 
     DyrosBoltModel model_;
     JointController joint_controller_;
+    JumpingController jumping_controller_;
 
 };
 

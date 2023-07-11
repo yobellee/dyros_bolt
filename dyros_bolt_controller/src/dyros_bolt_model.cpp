@@ -12,8 +12,8 @@ constexpr const size_t DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF;
   
 // These should be replaced by YAML or URDF or something
 const std::string DyrosBoltModel::JOINT_NAME[DyrosBoltModel::HW_TOTAL_DOF] = {
-    "FL_SHOULDER","FL_UPPER_LEG","FL_LOWER_LEG","FL_ANKLE",
-    "FR_SHOULDER","FR_UPPER_LEG","FR_LOWER_LEG","FR_ANKLE"};
+    "FL_HAA","FL_HFE","FL_KFE","FL_ANKLE",
+    "FR_HAA","FR_HFE","FR_KFE","FR_ANKLE"};
 
 // Dynamixel Hardware IDs
 const int DyrosBoltModel::JOINT_ID[DyrosBoltModel::HW_TOTAL_DOF] = {
@@ -91,13 +91,13 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
 
     rd_.UpdateKinematics(q, qdot, qddot, true);
 
-    rd_.AddContactConstraint("left_foot",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
-    rd_.AddContactConstraint("right_foot",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
+    // rd_.AddContactConstraint("FL_FOOT",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
+    // rd_.AddContactConstraint("FR_FOOT",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
 
-    rd_.SetContact(1,1);
-    rd_.CalcGravCompensation();
-    rd_.CalcContactRedistribute();
-    VectorXd command_Torque = rd_.torque_grav_ + rd_.torque_contact_;
+    // rd_.SetContact(1,1);
+    // rd_.CalcGravCompensation();
+    // rd_.CalcContactRedistribute();
+    // command_Torque = rd_.torque_grav_ + rd_.torque_contact_;
 
 
     getInertiaMatrixDoF(&full_inertia_mat_);

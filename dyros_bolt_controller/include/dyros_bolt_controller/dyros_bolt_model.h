@@ -33,6 +33,7 @@ public:
 
     unsigned int end_effector_id_[2];
     const unsigned int joint_start_index_[2];
+    VectorXd command_Torque;
 
     void test();
 
@@ -154,6 +155,7 @@ private:
 
     Eigen::Matrix28d A_;
     Eigen::MatrixXd A_temp_;
+
 };
 typedef Eigen::Matrix<double, DyrosBoltModel::HW_TOTAL_DOF, 1> VectorQd;
 }
