@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 #include "dyros_bolt_controller/mujoco_interface.h"
-// #include "dyros_bolt_controller/real_robot_interface.h"
+#include "dyros_bolt_controller/real_robot_interface.h"
 using namespace dyros_bolt_controller;
 
 #include <math.h>
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     else if(mode == "real_robot")
     {
         ROS_INFO("DYROS BOLT MAIN CONTROLLER - !!! REAL ROBOT MODE !!!");
-        // ctr_obj = new RealRobotInterface(nh, Hz);
+        ctr_obj = new RealRobotInterface(nh, Hz);
     }
     else
     {

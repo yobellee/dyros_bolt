@@ -7,5 +7,6 @@
   <node name="dyros_bolt_controller" pkg="dyros_bolt_controller" type="dyros_bolt_controller" required="true" respawn="false" output="screen">
     <param name="run_mode" type="string" value="$(arg run_mode)" />
     <param name="ctrl_mode" type="string" value="$(arg ctrl_mode)" />
+    <rosparam file="$(find dyros_bolt_controller)/odrive_config/odrive.yaml" />
   </node>
 </launch>
