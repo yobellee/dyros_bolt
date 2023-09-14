@@ -1,4 +1,4 @@
-#include "dyros_bolt_controller/odrive_axis.hpp"
+#include "dyros_bolt_controller/odrive_axis copy.hpp"
 
 namespace odrive {
     ODriveAxis::ODriveAxis(ros::NodeHandle *node,  std::string axis_name, int axis_can_id, std::string direction) {
@@ -17,45 +17,47 @@ namespace odrive {
         
         received_messages_sub_ = node->subscribe<can_msgs::Frame>(can_rx_topic_, 1,
             std::bind(&ODriveAxis::canReceivedMessagesCallback, this, std::placeholders::_1));
-        sent_messages_pub_ = node->advertise<can_msgs::Frame>(can_tx_topic_, 1);
-        // TARGET POSITION
-        target_position_sub_ = node->subscribe<std_msgs::Float64>("/" + axis_name_ + "/target_position",
-            1, std::bind(&ODriveAxis::positionReceivedMessagesCallback, this, std::placeholders::_1));
-        output_position_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/output_position", 1);
+        // sent_messages_pub_ = node->advertise<can_msgs::Frame>(can_tx_topic_, 1);
+        sent_messages_pub_.init(*node, can_tx_topic_, 1);
+
+        // // TARGET POSITION
+        // target_position_sub_ = node->subscribe<std_msgs::Float64>("/" + axis_name_ + "/target_position",
+        //     1, std::bind(&ODriveAxis::positionReceivedMessagesCallback, this, std::placeholders::_1));
+        // output_position_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/output_position", 1);
+
         // // TARGET VELOCITY
         // target_velocity_sub_ = node->subscribe<std_msgs::Float64>("/" + axis_name_ + "/target_velocity",
         //     1, std::bind(&ODriveAxis::velocityReceivedMessagesCallback, this, std::placeholders::_1));
         // output_velocity_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/output_velocity", 1);
-        // // TARGET TORQUE
-        // target_torque_sub_ = node->subscribe<std_msgs::Float64>("/" + axis_name_ + "/target_torque",
-        //     1, std::bind(&ODriveAxis::torqueReceivedMessagesCallback, this, std::placeholders::_1));
-        // output_torque_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/output_torque", 1);
+
+        // TARGET TORQUE
+        target_torque_sub_ = node->subscribe<std_msgs::Float64>("/" + axis_name_ + "/target_torque",
+            1, std::bind(&ODriveAxis::torqueReceivedMessagesCallback, this, std::placeholders::_1));
+        output_torque_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/output_torque", 1);
         
         axis_angle_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/angle", 1);
-        axis_velocity_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/current_velocity", 1);
+        axis_velocity_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/velocity", 1);
         axis_voltage_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/voltage", 1);
-        axis_current_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/current", 1);
+        // axis_current_pub_ = node->advertise<std_msgs::Float64>("/" + axis_name + "/current", 1);
         axis_angle_ = 0.0;
         axis_velocity_ = 0.0;
         axis_current_ = 0.0;
         axis_voltage_ = 0.0;
-        axis_update_timer_ = node->createTimer(ros::Duration(1 / update_rate_),
-            std::bind(&ODriveAxis::updateTimerCallback, this, std::placeholders::_1));
+        // axis_update_timer_ = node->createTimer(ros::Duration(1 / update_rate_),
+            // std::bind(&ODriveAxis::updateTimerCallback, this, std::placeholders::_1));
         
-        while (sent_messages_pub_.getNumSubscribers() < 1) {
-            // wait for a connection to publisher
-            // you can do whatever you like here or simply do nothing
-        }
+        // while (sent_messages_pub_.getNumSubscribers() < 1) {
+        //     // wait for a connection to publisher
+        //     // you can do whatever you like here or simply do nothing
+        // }
         while (received_messages_sub_.getNumPublishers() < 1) {
             // wait for a connection to publisher
             // you can do whatever you like here or simply do nothing
         }
+
         // TODO: design the logic behind engage on startup behaviour
-        // setControllerModes(TORQUE_CONTROL,PASSTHROUGH);
-        setControllerModes(POSITION_CONTROL, PASSTHROUGH);
-        if (engage_on_startup_) {
-            setAxisRequestedState(ENCODER_OFFSET_CALIBRATION);
-        }
+        setControllerModes(TORQUE_CONTROL,PASSTHROUGH);
+        // setControllerModes(POSITION_CONTROL, PASSTHROUGH);
     }
 
     void ODriveAxis::canReceivedMessagesCallback(const can_msgs::Frame::ConstPtr& msg) {
@@ -98,6 +100,9 @@ namespace odrive {
                 AxisCurrentState = msg->data[4];
                 // ptrControllerStatus[0] = msg->data[7];
                 axis_current_state_ = AxisCurrentState;
+                current_msg.data = double(axis_current_state_);
+
+                axis_voltage_pub_.publish(current_msg);
                 break;
             case ODriveCommandId::GET_ENCODER_ESTIMATE:
                 ROS_DEBUG("Axis %02x: GET_ENCODER_ESTIMATE", axis_can_id_);
@@ -128,10 +133,10 @@ namespace odrive {
                 ptrAxisCurrent[3] = msg->data[7];
                 axis_current_ = (double)axisCurrent;
                 axis_voltage_ = (double)axisVoltage;
-                current_msg.data = axis_current_;
-                voltage_msg.data = axis_voltage_;
-                axis_current_pub_.publish(current_msg);
-                axis_voltage_pub_.publish(voltage_msg);
+                // current_msg.data = axis_current_;
+                // voltage_msg.data = axis_voltage_;
+                // axis_current_pub_.publish(current_msg);
+                // axis_voltage_pub_.publish(voltage_msg);
                 break;
             default:
                 ROS_DEBUG("Axis %02x: unsupported command %02x", axis_can_id_, CMD_ID);
@@ -185,26 +190,43 @@ namespace odrive {
     void ODriveAxis::updateTimerCallback(const ros::TimerEvent& event) {
         (void)event;
         // requestEncoderEstimate();
-        requestBusVoltageAndCurrent();
+        // requestBusVoltageAndCurrent();
     }
 
     void ODriveAxis::requestEncoderEstimate() {
-        can_msgs::Frame request_msg;
-        request_msg.id = createCanId(axis_can_id_, ODriveCommandId::GET_ENCODER_ESTIMATE);
-        request_msg.is_extended = false;
-        request_msg.is_rtr = true;
-        request_msg.dlc = 8;
-        sent_messages_pub_.publish(request_msg);
+        // can_msgs::Frame request_msg;
+        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::GET_ENCODER_ESTIMATE);
+        // request_msg.is_extended = false;
+        // request_msg.is_rtr = true;
+        // request_msg.dlc = 8;
+        // sent_messages_pub_.publish(request_msg);
+
+        sent_messages_pub_.msg_.id = createCanId(axis_can_id_, ODriveCommandId::GET_ENCODER_ESTIMATE);
+        sent_messages_pub_.msg_.is_extended = false;
+        sent_messages_pub_.msg_.is_rtr = true;
+        sent_messages_pub_.msg_.dlc = 8;
+        if (sent_messages_pub_.trylock()) {
+            sent_messages_pub_.unlockAndPublish();
+        }
     }
 
     void ODriveAxis::requestBusVoltageAndCurrent() {
-        can_msgs::Frame request_msg;
-        request_msg.id = createCanId(axis_can_id_, ODriveCommandId::GET_BUS_VOLTAGE_AND_CURRENT);
-        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::ESTOP_MESSAGE);
-        request_msg.is_extended = false;
-        request_msg.is_rtr = true;
-        request_msg.dlc = 8;
-        sent_messages_pub_.publish(request_msg);
+        // can_msgs::Frame request_msg;
+        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::GET_BUS_VOLTAGE_AND_CURRENT);
+        // // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::ESTOP_MESSAGE);
+        // request_msg.is_extended = false;
+        // request_msg.is_rtr = true;
+        // request_msg.dlc = 8;
+        // sent_messages_pub_.publish(request_msg);
+
+        sent_messages_pub_.msg_.id = createCanId(axis_can_id_, ODriveCommandId::GET_BUS_VOLTAGE_AND_CURRENT);
+        // sent_messages_pub_.msg_.id = createCanId(axis_can_id_, ODriveCommandId::ESTOP_MESSAGE);
+        sent_messages_pub_.msg_.is_extended = false;
+        sent_messages_pub_.msg_.is_rtr = true;
+        sent_messages_pub_.msg_.dlc = 8;
+        if (sent_messages_pub_.trylock()) {
+            sent_messages_pub_.unlockAndPublish();
+        }
     }
 
     void ODriveAxis::setAxisRequestedState(ODriveAxisState state) {
@@ -212,14 +234,25 @@ namespace odrive {
         uint32_t requestedState = (uint32_t)state;
         uint8_t *ptrRequestedState;
         ptrRequestedState = (uint8_t *)&requestedState;
-        request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_AXIS_REQUESTED_STATE);
-        request_msg.is_extended = false;
-        request_msg.dlc = 8;
-        request_msg.data[0] = ptrRequestedState[0];
-        request_msg.data[1] = ptrRequestedState[1];
-        request_msg.data[2] = ptrRequestedState[2];
-        request_msg.data[3] = ptrRequestedState[3];
-        sent_messages_pub_.publish(request_msg);
+        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_AXIS_REQUESTED_STATE);
+        // request_msg.is_extended = false;
+        // request_msg.dlc = 8;
+        // request_msg.data[0] = ptrRequestedState[0];
+        // request_msg.data[1] = ptrRequestedState[1];
+        // request_msg.data[2] = ptrRequestedState[2];
+        // request_msg.data[3] = ptrRequestedState[3];
+        // sent_messages_pub_.publish(request_msg);
+        
+        sent_messages_pub_.msg_.id = createCanId(axis_can_id_, ODriveCommandId::SET_AXIS_REQUESTED_STATE);
+        sent_messages_pub_.msg_.is_extended = false;
+        sent_messages_pub_.msg_.dlc = 8;
+        sent_messages_pub_.msg_.data[0] = ptrRequestedState[0];
+        sent_messages_pub_.msg_.data[1] = ptrRequestedState[1];
+        sent_messages_pub_.msg_.data[2] = ptrRequestedState[2];
+        sent_messages_pub_.msg_.data[3] = ptrRequestedState[3];
+        if (sent_messages_pub_.trylock()) {
+            sent_messages_pub_.unlockAndPublish();
+        }
     }
 
     void ODriveAxis::setControllerModes(ODriveControlMode control_mode, ODriveInputMode input_mode) {
@@ -230,18 +263,34 @@ namespace odrive {
         uint8_t *ptrRequestedInput;
         ptrRequestedControl = (uint8_t *)&requestedControl;
         ptrRequestedInput = (uint8_t *)&requestedInput;
-        request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_CONTROLLER_MODES);
-        request_msg.is_extended = false;
-        request_msg.dlc = 8;
-        request_msg.data[0] = ptrRequestedControl[0];
-        request_msg.data[1] = ptrRequestedControl[1];
-        request_msg.data[2] = ptrRequestedControl[2];
-        request_msg.data[3] = ptrRequestedControl[3];
-        request_msg.data[4] = ptrRequestedInput[0];
-        request_msg.data[5] = ptrRequestedInput[1];
-        request_msg.data[6] = ptrRequestedInput[2];
-        request_msg.data[7] = ptrRequestedInput[3];
-        sent_messages_pub_.publish(request_msg);
+        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_CONTROLLER_MODES);
+        // request_msg.is_extended = false;
+        // request_msg.dlc = 8;
+        // request_msg.data[0] = ptrRequestedControl[0];
+        // request_msg.data[1] = ptrRequestedControl[1];
+        // request_msg.data[2] = ptrRequestedControl[2];
+        // request_msg.data[3] = ptrRequestedControl[3];
+        // request_msg.data[4] = ptrRequestedInput[0];
+        // request_msg.data[5] = ptrRequestedInput[1];
+        // request_msg.data[6] = ptrRequestedInput[2];
+        // request_msg.data[7] = ptrRequestedInput[3];
+        // sent_messages_pub_.publish(request_msg);
+
+        sent_messages_pub_.msg_.id = createCanId(axis_can_id_, ODriveCommandId::SET_CONTROLLER_MODES);
+        sent_messages_pub_.msg_.is_extended = false;
+        sent_messages_pub_.msg_.dlc = 8;
+        sent_messages_pub_.msg_.data[0] = ptrRequestedControl[0];
+        sent_messages_pub_.msg_.data[1] = ptrRequestedControl[1];
+        sent_messages_pub_.msg_.data[2] = ptrRequestedControl[2];
+        sent_messages_pub_.msg_.data[3] = ptrRequestedControl[3];
+        sent_messages_pub_.msg_.data[4] = ptrRequestedInput[0];
+        sent_messages_pub_.msg_.data[5] = ptrRequestedInput[1];
+        sent_messages_pub_.msg_.data[6] = ptrRequestedInput[2];
+        sent_messages_pub_.msg_.data[7] = ptrRequestedInput[3];
+        if (sent_messages_pub_.trylock()) {
+            sent_messages_pub_.unlockAndPublish();
+        }
+    
     }
 
     void ODriveAxis::setInputPosition(double position) {
@@ -255,18 +304,18 @@ namespace odrive {
         ptrPos = (uint8_t *)&pos;
         ptrVel = (uint8_t *)&vel;
         ptrTor = (uint8_t *)&torq;
-        request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_POS);
-        request_msg.is_extended = false;
-        request_msg.dlc = 8;
-        request_msg.data[0] = ptrPos[0];
-        request_msg.data[1] = ptrPos[1];
-        request_msg.data[2] = ptrPos[2];
-        request_msg.data[3] = ptrPos[3];
-        request_msg.data[4] = ptrVel[0];
-        request_msg.data[5] = ptrVel[1];
-        request_msg.data[6] = ptrTor[0];
-        request_msg.data[7] = ptrTor[1];
-        sent_messages_pub_.publish(request_msg);
+        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_POS);
+        // request_msg.is_extended = false;
+        // request_msg.dlc = 8;
+        // request_msg.data[0] = ptrPos[0];
+        // request_msg.data[1] = ptrPos[1];
+        // request_msg.data[2] = ptrPos[2];
+        // request_msg.data[3] = ptrPos[3];
+        // request_msg.data[4] = ptrVel[0];
+        // request_msg.data[5] = ptrVel[1];
+        // request_msg.data[6] = ptrTor[0];
+        // request_msg.data[7] = ptrTor[1];
+        // sent_messages_pub_.publish(request_msg);
     }
 
     void ODriveAxis::setInputVelocity(double velocity) {
@@ -277,18 +326,18 @@ namespace odrive {
         uint8_t *ptrTor;
         ptrVel = (uint8_t *)&vel;
         ptrTor = (uint8_t *)&torq;
-        request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_VELOCITY);
-        request_msg.is_extended = false;
-        request_msg.dlc = 8;
-        request_msg.data[0] = ptrVel[0];
-        request_msg.data[1] = ptrVel[1];
-        request_msg.data[2] = ptrVel[2];
-        request_msg.data[3] = ptrVel[3];
-        request_msg.data[4] = ptrTor[0];
-        request_msg.data[5] = ptrTor[1];
-        request_msg.data[6] = ptrTor[2];
-        request_msg.data[7] = ptrTor[3];
-        sent_messages_pub_.publish(request_msg);
+        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_VELOCITY);
+        // request_msg.is_extended = false;
+        // request_msg.dlc = 8;
+        // request_msg.data[0] = ptrVel[0];
+        // request_msg.data[1] = ptrVel[1];
+        // request_msg.data[2] = ptrVel[2];
+        // request_msg.data[3] = ptrVel[3];
+        // request_msg.data[4] = ptrTor[0];
+        // request_msg.data[5] = ptrTor[1];
+        // request_msg.data[6] = ptrTor[2];
+        // request_msg.data[7] = ptrTor[3];
+        // sent_messages_pub_.publish(request_msg);
     }
 
     void ODriveAxis::setInputTorque(double torque) {
@@ -299,18 +348,26 @@ namespace odrive {
         uint8_t *ptrTor;
         ptrVel = (uint8_t *)&vel;
         ptrTor = (uint8_t *)&torq;
-        request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_TORQUE);
-        request_msg.is_extended = false;
-        request_msg.dlc = 8;
-        request_msg.data[0] = ptrTor[0];
-        request_msg.data[1] = ptrTor[1];
-        request_msg.data[2] = ptrTor[2];
-        request_msg.data[3] = ptrTor[3];
-        sent_messages_pub_.publish(request_msg);
+        // request_msg.id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_TORQUE);
+        // request_msg.is_extended = false;
+        // request_msg.dlc = 8;
+        // request_msg.data[0] = ptrTor[0];
+        // request_msg.data[1] = ptrTor[1];
+        // request_msg.data[2] = ptrTor[2];
+        // request_msg.data[3] = ptrTor[3];
+        // sent_messages_pub_.publish(request_msg);
+
+        sent_messages_pub_.msg_.id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_TORQUE);
+        sent_messages_pub_.msg_.is_extended = false;
+        sent_messages_pub_.msg_.dlc = 8;
+        sent_messages_pub_.msg_.data[0] = ptrTor[0];
+        sent_messages_pub_.msg_.data[1] = ptrTor[1];
+        sent_messages_pub_.msg_.data[2] = ptrTor[2];
+        sent_messages_pub_.msg_.data[3] = ptrTor[3];
+        if (sent_messages_pub_.trylock()) {
+            sent_messages_pub_.unlockAndPublish();
+        }
     }
-
-
-
 
     void ODriveAxis::engage() {
         setAxisRequestedState(ODriveAxisState::CLOSED_LOOP_CONTROL);

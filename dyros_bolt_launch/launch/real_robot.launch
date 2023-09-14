@@ -7,8 +7,11 @@
   <node pkg="socketcan_bridge" type="socketcan_bridge_node" name="socketcan_bridge" output="screen" ns="can">
     <rosparam file="$(find dyros_bolt_controller)/odrive_config/odrive.yaml" />
   </node>
+  
   <include file="$(find dyros_bolt_launch)/launch/common.launch">
     <arg name="run_mode" value="real_robot" />
-    <arg name="ctrl_mode" value="position" />
+    <arg name="ctrl_mode" value="torque" />
   </include>
+
+  <node name="dyros_gui" pkg="dyros_gui" type="dyros_gui" />
 </launch>

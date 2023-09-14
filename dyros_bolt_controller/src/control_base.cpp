@@ -25,6 +25,9 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   //joint_robot_state_pub_.msg_.velocity.resize(DyrosBoltModel::HW_TOTAL_DOF-4);
   //joint_robot_state_pub_.msg_.effort.resize(DyrosBoltModel::HW_TOTAL_DOF-4);
 
+  nh.getParam("Kp", pos_kp);
+  nh.getParam("Kv", pos_kv);
+
   for (int i=0; i< DyrosBoltModel::HW_TOTAL_DOF; i++)
   {
       joint_state_pub_.msg_.name[i] = DyrosBoltModel::JOINT_NAME[i];
@@ -35,6 +38,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   }
 
   joint_command_sub_ = nh.subscribe("/dyros_bolt/joint_command", 3, &ControlBase::jointCommandCallback, this);
+  jumping_command_sub_ = nh.subscribe("/dyros_bolt/jumping_command",3, &ControlBase::jummpingCommandCallback,this);
   shutdown_command_sub_ = nh.subscribe("/dyros_bolt/shutdown_command", 1, &ControlBase::shutdownCommandCallback,this);
   parameterInitialize();
   model_.test();
@@ -117,6 +121,13 @@ void ControlBase::compute()
   joint_controller_.writeDesired(control_mask_, desired_q_);
   jumping_controller_.writeDesired(control_mask_, desired_q_);
 
+  // Torque Control
+  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)
+  {
+    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (0 - q_dot_[i]);
+  }
+  
+
   tick_ ++;
   control_time_ = tick_ / Hz_;
 
@@ -195,6 +206,18 @@ void ControlBase::jointCommandCallback(const dyros_bolt_msgs::JointCommandConstP
       joint_controller_.setTarget(model_.getIndex(msg->name[i]), msg->position[i], msg->duration[i]);
       joint_controller_.setEnable(model_.getIndex(msg->name[i]), true);
     }
+  }
+}
+
+void ControlBase::jummpingCommandCallback(const dyros_bolt_msgs::JumpingCommandConstPtr &msg)
+{
+  if(msg->jump_mode == dyros_bolt_msgs::JumpingCommand::JUMP)
+  {
+    jumping_controller_.setEnable(true);
+  }
+  else
+  {
+    jumping_controller_.setEnable(false);
   }
 }
 

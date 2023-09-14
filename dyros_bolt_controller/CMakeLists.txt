@@ -144,7 +144,7 @@ file(GLOB CONTROLLER_SRC
     "src/dyros_bolt_model.cpp"
     "src/joint_controller.cpp"
     "src/jumping_controller.cpp"
-    "src/odrive_axis.cpp"
+    "src/odrive_socketcan.cpp"
     )
 
 ## Declare a C++ library

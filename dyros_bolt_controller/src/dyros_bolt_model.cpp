@@ -12,8 +12,8 @@ constexpr const size_t DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF;
   
 // These should be replaced by YAML or URDF or something
 const std::string DyrosBoltModel::JOINT_NAME[DyrosBoltModel::HW_TOTAL_DOF] = {
-    "FL_HAA","FL_HFE","FL_KFE","FL_ANKLE",
-    "FR_HAA","FR_HFE","FR_KFE","FR_ANKLE"};
+    "left_hip_AA", "left_hip_FE", "left_knee", "left_ankle",
+    "right_hip_AA", "right_hip_FE", "right_knee", "right_ankle"};
 
 // Dynamixel Hardware IDs
 const int DyrosBoltModel::JOINT_ID[DyrosBoltModel::HW_TOTAL_DOF] = {

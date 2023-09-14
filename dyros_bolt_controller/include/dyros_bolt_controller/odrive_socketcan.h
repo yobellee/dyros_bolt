@@ -2,11 +2,20 @@
 #define ODRIVE_INTERFACE_HPP_
 
 #include <ros/ros.h>
-#include <std_msgs/Float64.h>
-#include <can_msgs/Frame.h>
 #include <math.h>
+#include <iostream>
+#include <thread>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <unistd.h>
+#include <net/if.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
 
-#define DEFAULT_UPDATE_RATE 1
 
 
 namespace odrive {
@@ -15,7 +24,8 @@ namespace odrive {
         CANOPEN_NMT_MESSAGE = 0x000,
         HEARTBEAT_MESSAGE = 0x001,
         ESTOP_MESSAGE = 0x002,
-        GETERROR = 0x003,
+        GETMOTORERROR = 0x003,
+        GETENCODERERROR = 0x004,
         SET_AXIS_NODE_ID = 0x006,
         SET_AXIS_REQUESTED_STATE = 0x007,
         SET_AXIS_STARTUP_CONFIG = 0x008,
@@ -76,9 +86,10 @@ namespace odrive {
         TUNING= 0x8
     };
 
-    class ODriveAxis {
+    class ODriveSocketCan {
         public:
-            ODriveAxis(ros::NodeHandle *node, std::string axis_name, int axis_can_id, std::string direction);
+            ODriveSocketCan(ros::NodeHandle &nh);
+            ~ODriveSocketCan() { disengage();}
             double getAxisAngle();
             double getAxisVelocity();
             double getAxisVoltage();
@@ -86,57 +97,39 @@ namespace odrive {
             void engage();
             void disengage();
             
-            void setInputPosition(double position);
-            void setInputVelocity(double velocity);
-            void setInputTorque(double torque);
-            uint8_t axis_current_state_;
-        private:
-            ros::Subscriber received_messages_sub_;
-            ros::Publisher sent_messages_pub_;
+            void setInputPosition(int axis_can_id_, double position);
+            void setInputVelocity(int axis_can_id_, double velocity);
+            void setInputTorque(int axis_can_id_, double torque);
 
-            ros::Subscriber target_position_sub_;
-            ros::Subscriber target_velocity_sub_;
-            ros::Subscriber target_torque_sub_;
-            ros::Publisher output_position_pub_;
-            ros::Publisher output_velocity_pub_;
-            ros::Publisher output_torque_pub_;
+            void setAxisRequestedState(int axis_can_id_, ODriveAxisState state);
             
-            ros::Publisher axis_angle_pub_;
-            ros::Publisher axis_velocity_pub_;
-            ros::Publisher axis_voltage_pub_;
-            ros::Publisher axis_current_pub_;
-
-            ros::Timer axis_update_timer_;
             std::string axis_name_;
-            std::string can_rx_topic_;
-            std::string can_tx_topic_;
+            std::vector<int> axis_can_ids_list;
             
-            int axis_can_id_;
-            int direction_;
-            bool engage_on_startup_;
+            int axis_error[6] = {0,0,0,0,0,0};
+            int axis_current_state[6] = {0,0,0,0,0,0};
+            int axis_controller_state[6] = {0,0,0,0,0,0};
+            
+            double axis_angle[6] = {0,0,0,0,0,0};
+            double axis_velocity[6] = {0,0,0,0,0,0};
+        private:
+            ros::NodeHandle node;
+            int socketcan;
+
             double update_rate_;
-            double axis_min_velocity_;
-            
-            double axis_angle_;
-            double axis_velocity_;
             double axis_voltage_;
             double axis_current_;
 
             
-            void canReceivedMessagesCallback(const can_msgs::Frame::ConstPtr& msg);
+            void canReceiveMessages();
 
-            void positionReceivedMessagesCallback(const std_msgs::Float64::ConstPtr& msg);
-            void velocityReceivedMessagesCallback(const std_msgs::Float64::ConstPtr& msg);
-            void torqueReceivedMessagesCallback(const std_msgs::Float64::ConstPtr& msg);
+            void requestBusVoltageAndCurrent(int axis_can_id_);
 
-            void updateTimerCallback(const ros::TimerEvent& event);
-            void requestEncoderEstimate();
-            void requestBusVoltageAndCurrent();
-
-            void setAxisRequestedState(ODriveAxisState state);
-            void setControllerModes(ODriveControlMode control_mode, ODriveInputMode input_mode);
+            void setControllerModes(int axis_can_id_, ODriveControlMode control_mode, ODriveInputMode input_mode);
 
             uint32_t createCanId(int axis_can_id, int command);
+            float bytesToFloat(const unsigned char* data);
+            int bytesToInt(const unsigned char* data);
     };
 }
 

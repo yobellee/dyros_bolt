@@ -30,6 +30,7 @@
 #include <dyros_bolt_msgs/TaskCommand.h>
 #include <dyros_bolt_msgs/JointCommand.h>
 #include <dyros_bolt_msgs/WalkingCommand.h>
+#include <dyros_bolt_msgs/JumpingCommand.h>
 #include <dyros_bolt_msgs/WalkingState.h>
 #include <dyros_bolt_msgs/JointControlAction.h>
 
@@ -70,6 +71,9 @@ public:
 
     const double getHz() { return Hz_; }
 
+    std::vector<double> pos_kp;
+    std::vector<double> pos_kv;
+
 private:
     void makeIDInverseList();
 
@@ -80,6 +84,7 @@ private:
     bool shutdown_flag_;
 
     ros::Subscriber joint_command_sub_;
+    ros::Subscriber jumping_command_sub_;
     ros::Subscriber shutdown_command_sub_;
 
     dyros_bolt_msgs::JointControlFeedback joint_control_feedback_;
@@ -87,6 +92,7 @@ private:
     actionlib::SimpleActionServer<dyros_bolt_msgs::JointControlAction>  joint_control_as_;  // Action Server
 
     void jointCommandCallback(const dyros_bolt_msgs::JointCommandConstPtr& msg);
+    void jummpingCommandCallback(const dyros_bolt_msgs::JumpingCommandConstPtr& msg);
     void shutdownCommandCallback(const std_msgs::StringConstPtr& msg);
     void jointControlActionCallback(const dyros_bolt_msgs::JointControlGoalConstPtr &goal);    
 

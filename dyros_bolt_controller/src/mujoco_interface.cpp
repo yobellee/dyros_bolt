@@ -176,7 +176,8 @@ void mujoco_interface::update()
 
 void mujoco_interface::compute()
 {
-    ControlBase::compute();
+  ControlBase::compute();
+  // std::cout << desired_q_ << std::endl;
 }
 
 void mujoco_interface::writeDevice()

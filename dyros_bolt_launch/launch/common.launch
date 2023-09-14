@@ -8,5 +8,6 @@
     <param name="run_mode" type="string" value="$(arg run_mode)" />
     <param name="ctrl_mode" type="string" value="$(arg ctrl_mode)" />
     <rosparam file="$(find dyros_bolt_controller)/odrive_config/odrive.yaml" />
+    <rosparam file="$(find dyros_bolt_controller)/odrive_config/gain.yaml" />
   </node>
 </launch>
