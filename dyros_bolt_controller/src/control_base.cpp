@@ -23,7 +23,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   joint_robot_state_pub_.msg_.name.resize(DyrosBoltModel::HW_TOTAL_DOF);
   joint_robot_state_pub_.msg_.position.resize(DyrosBoltModel::HW_TOTAL_DOF);
   //joint_robot_state_pub_.msg_.velocity.resize(DyrosBoltModel::HW_TOTAL_DOF-4);
-  //joint_robot_state_pub_.msg_.effort.resize(DyrosBoltModel::HW_TOTAL_DOF-4);
+  joint_robot_state_pub_.msg_.effort.resize(DyrosBoltModel::HW_TOTAL_DOF);
 
   nh.getParam("Kp", pos_kp);
   nh.getParam("Kv", pos_kv);
@@ -59,6 +59,7 @@ void ControlBase::parameterInitialize()
   q_dot_.setZero();
   q_dot_filtered_.setZero();
   torque_.setZero();
+  desired_torque_.setZero();
 //   left_foot_ft_.setZero();
 //   left_foot_ft_.setZero();
   desired_q_.setZero();
@@ -148,8 +149,8 @@ void ControlBase::reflect()
   for (int i=0; i<DyrosBoltModel::HW_TOTAL_DOF; i++)
   {
     joint_robot_state_pub_.msg_.position[i] = q_(i);
-    //joint_robot_state_pub_.msg_.velocity[i] = q_dot_(i);
-    //joint_robot_state_pub_.msg_.effort[i] = torque_(i);
+    // joint_robot_state_pub_.msg_.velocity[i] = q_dot_(i);
+    joint_robot_state_pub_.msg_.effort[i] = desired_torque_(i);
   }
 
   if(joint_state_pub_.trylock())

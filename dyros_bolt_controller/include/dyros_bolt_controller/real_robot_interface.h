@@ -2,7 +2,7 @@
 #define REAL_ROBOT_INTERFACE_H
 
 #include <std_msgs/Float64.h>
-#include <std_msgs/Bool.h>
+#include <std_msgs/Int16.h>
 #include <unordered_set>
 #include "dyros_bolt_controller/odrive_socketcan.h"
 
@@ -26,8 +26,7 @@ public:
     virtual void writeDevice() override; // publish to actuate devices
     virtual void wait() override;
 
-    void motorEngageCallback(const std_msgs::Bool::ConstPtr& msg);
-    void calibrationCallback(const std_msgs::Bool::ConstPtr& msg);
+    void axisRequestStateCallback(const std_msgs::Int16::ConstPtr& msg);
     
     odrive::ODriveSocketCan odrv;
 
@@ -35,8 +34,7 @@ public:
 private:
     ros::Rate rate_;
 
-    ros::Subscriber cl_ctrl_sub;
-    ros::Subscriber calibration_sub;
+    ros::Subscriber axis_request_state_sub;
 
     bool areMotorsReady();
     
