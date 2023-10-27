@@ -18,8 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   std_msgs
   mujoco_ros_msgs
-  can_msgs
-  socketcan_bridge
 )
 find_package(dwbc REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -117,7 +115,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES dyros_bolt_controller
-  CATKIN_DEPENDS actionlib realtime_tools eigen_conversions geometry_msgs roscpp roslib sensor_msgs std_msgs  mujoco_ros_msgs can_msgs
+  CATKIN_DEPENDS actionlib realtime_tools eigen_conversions geometry_msgs roscpp roslib sensor_msgs std_msgs  mujoco_ros_msgs
 #  DEPENDS system_lib
 )
 

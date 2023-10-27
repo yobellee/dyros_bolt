@@ -3,6 +3,7 @@
 
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
+#include <std_msgs/Int16MultiArray.h>
 #include <unordered_set>
 #include "dyros_bolt_controller/odrive_socketcan.h"
 
@@ -35,8 +36,10 @@ private:
     ros::Rate rate_;
 
     ros::Subscriber axis_request_state_sub;
+    ros::Publisher axis_current_state_pub;
 
     bool areMotorsReady();
+    void axisCurrentPublish();
     
 
 };

@@ -48,8 +48,6 @@
   <!--   <test_depend>gtest</test_depend> -->
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
-  <depend>can_msgs</depend>
-  <depend>socketcan_bridge</depend>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>realtime_tools</build_depend>
