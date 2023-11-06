@@ -9,6 +9,7 @@ RealRobotInterface::RealRobotInterface(ros::NodeHandle &nh, double Hz):
     ROS_INFO("ODrive starting up");
     axis_request_state_sub = nh.subscribe<std_msgs::Int16>("/odrv_axis_request_states", 1, &RealRobotInterface::axisRequestStateCallback, this);
     axis_current_state_pub = nh.advertise<std_msgs::Int16MultiArray>("/odrv_axis_current_states", 1);
+
 }
 
 void RealRobotInterface::axisRequestStateCallback(const std_msgs::Int16::ConstPtr& msg) {
@@ -37,6 +38,7 @@ void RealRobotInterface::axisRequestStateCallback(const std_msgs::Int16::ConstPt
 void RealRobotInterface::readDevice()
 {
     ControlBase::readDevice();
+    axisCurrentPublish();
     
     for (int i = 0; i < 3; i++)
     {
@@ -82,7 +84,7 @@ void RealRobotInterface::wait()
 bool RealRobotInterface::areMotorsReady()
 {
     // for(int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
-    for(int i = 3; i < 4; i++) {
+    for(int i = 0; i < 1; i++) {
         if(odrv.axis_current_state[i] != 8) {
             return false;
         }
@@ -95,7 +97,7 @@ void RealRobotInterface::axisCurrentPublish()
     std_msgs::Int16MultiArray state_msgs;
     for (int i = 0; i < 6; i++)
     {
-        state_msgs.data[i] = odrv.axis_current_state[i];
+        state_msgs.data.push_back(odrv.axis_current_state[i]);
     }
     axis_current_state_pub.publish(state_msgs);
 }
