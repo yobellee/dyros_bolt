@@ -19,10 +19,10 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   joint_state_pub_.msg_.current.resize(DyrosBoltModel::HW_TOTAL_DOF);
   joint_state_pub_.msg_.error.resize(DyrosBoltModel::HW_TOTAL_DOF);
 
-  joint_robot_state_pub_.init(nh, "/joint_states", 3);
+  joint_robot_state_pub_.init(nh, "/joint_states", 5);
   joint_robot_state_pub_.msg_.name.resize(DyrosBoltModel::HW_TOTAL_DOF);
   joint_robot_state_pub_.msg_.position.resize(DyrosBoltModel::HW_TOTAL_DOF);
-  //joint_robot_state_pub_.msg_.velocity.resize(DyrosBoltModel::HW_TOTAL_DOF-4);
+  joint_robot_state_pub_.msg_.velocity.resize(DyrosBoltModel::HW_TOTAL_DOF);
   joint_robot_state_pub_.msg_.effort.resize(DyrosBoltModel::HW_TOTAL_DOF);
 
   nh.getParam("Kp", pos_kp);
@@ -101,7 +101,8 @@ void ControlBase::update()
   q_vjoint_dot.setZero();
   q_vjoint.segment<DyrosBoltModel::MODEL_DOF>(6) = q_.head<DyrosBoltModel::MODEL_DOF>();
 
-  q_dot_filtered_ = q_dot_;//DyrosMath::lowPassFilter<DyrosBoltModel::HW_TOTAL_DOF>(q_dot_, q_dot_filtered_, 1.0 / Hz_, 0.05);
+  // q_dot_filtered_ = q_dot_;
+  DyrosMath::lowPassFilter<DyrosBoltModel::HW_TOTAL_DOF>(q_dot_, q_dot_filtered_, 1.0 / Hz_, 0.05);
   q_vjoint_dot.segment<DyrosBoltModel::MODEL_DOF>(6) = q_dot_filtered_.head<DyrosBoltModel::MODEL_DOF>();
 
   q_vjoint_ddot.setZero();
@@ -125,7 +126,7 @@ void ControlBase::compute()
   // Torque Control
   for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)
   {
-    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (0 - q_dot_[i]);
+    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]);
   }
   
 
@@ -149,7 +150,7 @@ void ControlBase::reflect()
   for (int i=0; i<DyrosBoltModel::HW_TOTAL_DOF; i++)
   {
     joint_robot_state_pub_.msg_.position[i] = q_(i);
-    // joint_robot_state_pub_.msg_.velocity[i] = q_dot_(i);
+    joint_robot_state_pub_.msg_.velocity[i] = q_dot_filtered_(i);
     joint_robot_state_pub_.msg_.effort[i] = desired_torque_(i);
   }
 

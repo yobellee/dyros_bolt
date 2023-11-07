@@ -31,6 +31,11 @@ void RealRobotInterface::axisRequestStateCallback(const std_msgs::Int16::ConstPt
             break;
         case 8:
             odrv.engage();
+            for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
+            {
+                odrv.setInputTorque(i, 0);
+                odrv.setInputTorque(i+3,0);
+            }
             break;    
     }
 }
@@ -49,7 +54,9 @@ void RealRobotInterface::readDevice()
         q_dot_(i+4) = odrv.axis_velocity[i+3];
     }
     q_[3] = 0;
-    q_[3] = 0;
+    q_[7] = 0;
+    q_dot_[3] =0;
+    q_dot_[7] =0;
     // q_[3] = M_PI/2;
     // q_[7] = M_PI/2;
 }
@@ -62,16 +69,15 @@ void RealRobotInterface::update()
 void RealRobotInterface::writeDevice()
 {
     if(areMotorsReady()){
-        std::cout << "motor" << std::endl;
-        for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2; i++)
+        for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
         {
-            if(i == 3)
-            {
-                odrv.setInputTorque(i, 0.0);
-                odrv.setInputTorque(i+4, 0.0);
-            }
+            // if(i = 3)
+            // {
+            //     // odrv.setInputTorque(i, 0.0);
+            //     // odrv.setInputTorque(i+4, 0.0);
+            // }
             odrv.setInputTorque(i, double(desired_torque_(i)));
-            odrv.setInputTorque(i+4, double(desired_torque_(i+4)));
+            odrv.setInputTorque(i+3, double(desired_torque_(i+4)));
         }
     }
 }
