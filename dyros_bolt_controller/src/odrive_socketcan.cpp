@@ -79,6 +79,18 @@ namespace odrive {
         }
     }
 
+    void ODriveSocketCan::requestODriveCmd(int axis_can_id_, ODriveCommandId cmd) {
+        struct can_frame frame;
+        frame.can_id = createCanId(axis_can_id_, cmd);
+        frame.can_dlc = 8;    // Data length code (number of data bytes)
+
+        if (write(socketcan, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
+            perror("write");
+            close(socketcan);
+            throw std::runtime_error("Failed to sent CAN frame");
+        }
+    }
+
     void ODriveSocketCan::setAxisRequestedState(int axis_can_id_, ODriveAxisState state) {
         struct can_frame frame;
         frame.can_id = createCanId(axis_can_id_, ODriveCommandId::SET_AXIS_REQUESTED_STATE);

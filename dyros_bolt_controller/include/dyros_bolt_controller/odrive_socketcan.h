@@ -101,6 +101,7 @@ namespace odrive {
             void setInputVelocity(int axis_can_id_, double velocity);
             void setInputTorque(int axis_can_id_, double torque);
 
+            void requestODriveCmd(int axis_can_id_, ODriveCommandId cmd);
             void setAxisRequestedState(int axis_can_id_, ODriveAxisState state);
             
             std::string axis_name_;
@@ -124,6 +125,7 @@ namespace odrive {
             void canReceiveMessages();
 
             void requestBusVoltageAndCurrent(int axis_can_id_);
+            
 
             void setControllerModes(int axis_can_id_, ODriveControlMode control_mode, ODriveInputMode input_mode);
 

@@ -19,6 +19,11 @@ void RealRobotInterface::axisRequestStateCallback(const std_msgs::Int16::ConstPt
         case 1:
             odrv.disengage();
             break;
+        case 2:
+            for (int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
+                odrv.requestODriveCmd(i, odrive::ODriveCommandId::ESTOP_MESSAGE);
+            }
+            break;    
         case 4:
             for (int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
                 odrv.setAxisRequestedState(odrv.axis_can_ids_list[i], odrive::ODriveAxisState::MOTOR_CALIBRATION);
@@ -35,6 +40,11 @@ void RealRobotInterface::axisRequestStateCallback(const std_msgs::Int16::ConstPt
             {
                 odrv.setInputTorque(i, 0);
                 odrv.setInputTorque(i+3,0);
+            }
+            break;
+        case 16:
+            for (int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
+                odrv.requestODriveCmd(i, odrive::ODriveCommandId::REBOOT_ODRIVE);
             }
             break;    
     }
