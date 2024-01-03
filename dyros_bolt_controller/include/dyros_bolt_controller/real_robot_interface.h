@@ -31,7 +31,6 @@ public:
     
     odrive::ODriveSocketCan odrv;
 
-
 private:
     ros::Rate rate_;
 

@@ -2,6 +2,7 @@
 
 namespace dyros_bolt_controller
 {
+std::ofstream outFile("/home/yong/data.txt");
 
 RealRobotInterface::RealRobotInterface(ros::NodeHandle &nh, double Hz):
   ControlBase(nh, Hz), rate_(Hz), odrv(nh)
@@ -46,6 +47,11 @@ void RealRobotInterface::axisRequestStateCallback(const std_msgs::Int16::ConstPt
             for (int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
                 odrv.requestODriveCmd(i, odrive::ODriveCommandId::REBOOT_ODRIVE);
             }
+            break;
+        case 19:
+            for (int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
+                odrv.resetEncoder(i, odrive::ODriveCommandId::SET_ABSOLUTE_POSITION);
+            }
             break;    
     }
 }
@@ -67,8 +73,6 @@ void RealRobotInterface::readDevice()
     q_[7] = 0;
     q_dot_[3] =0;
     q_dot_[7] =0;
-    // q_[3] = M_PI/2;
-    // q_[7] = M_PI/2;
 }
 
 void RealRobotInterface::update()
@@ -99,8 +103,8 @@ void RealRobotInterface::wait()
 
 bool RealRobotInterface::areMotorsReady()
 {
-    // for(int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
-    for(int i = 0; i < 1; i++) {
+    for(int i = 0; i < odrv.axis_can_ids_list.size(); i++) {
+    // for(int i = 0; i < 1; i++) {
         if(odrv.axis_current_state[i] != 8) {
             return false;
         }

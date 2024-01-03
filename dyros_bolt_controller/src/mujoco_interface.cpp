@@ -207,7 +207,8 @@ void mujoco_interface::writeDevice()
     {
       for(int i=0;i<total_dof_;i++)
       {
-        mujoco_joint_set_msg_.torque[i] = model_.command_Torque(i);
+        // mujoco_joint_set_msg_.torque[i] = model_.command_Torque(i);
+        mujoco_joint_set_msg_.torque[i] = desired_torque_(i);
       }
       mujoco_joint_set_msg_.header.stamp = ros::Time::now();
       mujoco_joint_set_msg_.time = mujoco_sim_time;

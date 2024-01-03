@@ -3,8 +3,9 @@
 
 #include "control_base.h"
 #include <ros/ros.h>
-#include <std_msgs/String.h>
+#include <std_msgs/String.h> 
 #include <std_msgs/Float32.h>
+#include <std_msgs/Int16.h>
 #include <sensor_msgs/JointState.h>
 #include <mujoco_ros_msgs/SensorState.h>
 #include <mujoco_ros_msgs/JointSet.h>
@@ -27,6 +28,8 @@ private:  // CALLBACK
   void sensorStateCallback(const mujoco_ros_msgs::SensorStateConstPtr& msg);
   void simCommandCallback(const  std_msgs::StringConstPtr& msg);
   void simTimeCallback(const std_msgs::Float32ConstPtr &msg);
+  void axisRequestStateCallback(const std_msgs::Int16ConstPtr &msg);
+
   void simready();
   void torque_control();
   void joint_control();
@@ -47,6 +50,7 @@ private:
   ros::Subscriber mujoco_sensor_state_sub_;
   ros::Subscriber mujoco_sim_command_sub_;
   ros::Subscriber mujoco_sim_time_sub_;
+  ros::Subscriber axis_request_state_sub;
 
   mujoco_ros_msgs::JointSet mujoco_joint_set_msg_;
 

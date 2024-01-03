@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     
 
     double Hz;
-    nh.param<double>("control_frequency", Hz, 500.0);
+    nh.param<double>("control_frequency", Hz, 200.0);
 
     if(mode == "simulation")
     {

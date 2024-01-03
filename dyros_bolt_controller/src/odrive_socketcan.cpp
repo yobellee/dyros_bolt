@@ -1,4 +1,5 @@
 #include "dyros_bolt_controller/odrive_socketcan.h"
+std::ofstream outFile("/home/yong/data.txt");
 
 namespace odrive {
     ODriveSocketCan::ODriveSocketCan(ros::NodeHandle &nh):
@@ -58,8 +59,10 @@ namespace odrive {
                     axis_current_state[static_cast<int>(can_axis_id_)] = static_cast<int>(recv_frame.data[4]);
                     axis_controller_state[static_cast<int>(can_axis_id_)] = static_cast<int>(recv_frame.data[7]);
                 case ODriveCommandId::GET_ENCODER_ESTIMATE:
-                    axis_angle[static_cast<int>(can_axis_id_)] = double(bytesToFloat(recv_frame.data)) * 2 * M_PI;
-                    axis_velocity[static_cast<int>(can_axis_id_)] = double(bytesToFloat(recv_frame.data + 4)) * 2 * M_PI;
+                    axis_angle[static_cast<int>(can_axis_id_)] = double(bytesToFloat(recv_frame.data)) * 2 * M_PI / 9;
+                    axis_velocity[static_cast<int>(can_axis_id_)] = double(bytesToFloat(recv_frame.data + 4)) * 2 * M_PI / 9;
+                case ODriveCommandId::GET_IQ:
+                    axis_current[static_cast<int>(can_axis_id_)] = double(bytesToFloat(recv_frame.data + 4));
                 }
 
                     
@@ -83,6 +86,22 @@ namespace odrive {
         struct can_frame frame;
         frame.can_id = createCanId(axis_can_id_, cmd);
         frame.can_dlc = 8;    // Data length code (number of data bytes)
+
+        if (write(socketcan, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
+            perror("write");
+            close(socketcan);
+            throw std::runtime_error("Failed to sent CAN frame");
+        }
+    }
+
+    void ODriveSocketCan::resetEncoder(int axis_can_id_, ODriveCommandId cmd) {
+        struct can_frame frame;
+        frame.can_id = createCanId(axis_can_id_, cmd);
+        frame.can_dlc = 8;    // Data length code (number of data bytes)
+        
+        // Data to be sent
+        unsigned char data[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        std::memcpy(frame.data, data, sizeof(data));
 
         if (write(socketcan, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
             perror("write");

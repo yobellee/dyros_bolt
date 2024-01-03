@@ -4,6 +4,8 @@
 #include <ros/ros.h>
 #include <math.h>
 #include <iostream>
+#include <fstream>
+#include <chrono>
 #include <thread>
 #include <cstring>
 #include <cstdio>
@@ -102,6 +104,7 @@ namespace odrive {
             void setInputTorque(int axis_can_id_, double torque);
 
             void requestODriveCmd(int axis_can_id_, ODriveCommandId cmd);
+            void resetEncoder(int axis_can_id_, ODriveCommandId cmd);
             void setAxisRequestedState(int axis_can_id_, ODriveAxisState state);
             
             std::string axis_name_;
@@ -113,14 +116,13 @@ namespace odrive {
             
             double axis_angle[6] = {0,0,0,0,0,0};
             double axis_velocity[6] = {0,0,0,0,0,0};
+            double axis_current[6] = {0,0,0,0,0,0};
+
         private:
             ros::NodeHandle node;
             int socketcan;
 
             double update_rate_;
-            double axis_voltage_;
-            double axis_current_;
-
             
             void canReceiveMessages();
 

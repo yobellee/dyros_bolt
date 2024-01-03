@@ -4,6 +4,8 @@
 // STD Library
 #include <array>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 // System Library
 #include <termios.h>
