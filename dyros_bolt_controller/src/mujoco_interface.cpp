@@ -72,7 +72,7 @@ void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr 
   {
     for(int i=0;i<total_dof_;i++)
     {
-      desired_q_(i)=q_(i); 
+      desired_q_(i)=q_(i);
     }
     mujoco_init_receive = true;
   }
