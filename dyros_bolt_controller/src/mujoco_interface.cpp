@@ -240,9 +240,6 @@ void mujoco_interface::wait()
         poll_rate.sleep();
 
     }
-
-
 }
-
 
 }
