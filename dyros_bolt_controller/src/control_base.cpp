@@ -6,7 +6,7 @@ namespace dyros_bolt_controller
 ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   is_first_boot_(true), Hz_(Hz), control_mask_{}, total_dof_(DyrosBoltModel::HW_TOTAL_DOF),shutdown_flag_(false),
   joint_controller_(q_, q_dot_filtered_, control_time_),
-  jumping_controller_(model_, q_, q_dot_filtered_, Hz, control_time_),
+  // jumping_controller_(model_, q_, q_dot_filtered_, Hz, control_time_),
   joint_control_as_(nh, "/dyros_bolt/joint_control", false)
 {
   makeIDInverseList();
@@ -38,7 +38,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   }
 
   joint_command_sub_ = nh.subscribe("/dyros_bolt/joint_command", 3, &ControlBase::jointCommandCallback, this);
-  jumping_command_sub_ = nh.subscribe("/dyros_bolt/jumping_command",3, &ControlBase::jummpingCommandCallback,this);
+  // jumping_command_sub_ = nh.subscribe("/dyros_bolt/jumping_command",3, &ControlBase::jummpingCommandCallback,this);
   shutdown_command_sub_ = nh.subscribe("/dyros_bolt/shutdown_command", 1, &ControlBase::shutdownCommandCallback,this);
   parameterInitialize();
   model_.test();
@@ -99,11 +99,11 @@ void ControlBase::update()
   Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1> q_vjoint_dot, q_vjoint_ddot;
   q_vjoint.setZero();
   q_vjoint_dot.setZero();
-  q_vjoint.segment<DyrosBoltModel::MODEL_DOF>(6) = q_.head<DyrosBoltModel::MODEL_DOF>();
+  q_vjoint.segment<MODEL_DOF>(6) = q_.head<MODEL_DOF>();
 
   // q_dot_filtered_ = q_dot_;
   DyrosMath::lowPassFilter<DyrosBoltModel::HW_TOTAL_DOF>(q_dot_, q_dot_filtered_, 1.0 / Hz_, 0.05);
-  q_vjoint_dot.segment<DyrosBoltModel::MODEL_DOF>(6) = q_dot_filtered_.head<DyrosBoltModel::MODEL_DOF>();
+  q_vjoint_dot.segment<MODEL_DOF>(6) = q_dot_filtered_.head<MODEL_DOF>();
 
   q_vjoint_ddot.setZero();
 
@@ -115,16 +115,16 @@ void ControlBase::compute()
 {
 
   joint_controller_.compute();
-  jumping_controller_.compute();
+  // jumping_controller_.compute();
 
   joint_controller_.updateControlMask(control_mask_);
-  jumping_controller_.updateControlMask(control_mask_);
+  // jumping_controller_.updateControlMask(control_mask_);
 
   joint_controller_.writeDesired(control_mask_, desired_q_);
-  jumping_controller_.writeDesired(control_mask_, desired_q_);
+  // jumping_controller_.writeDesired(control_mask_, desired_q_);
 
   // Torque Control
-  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)
+  for (int i = 0; i < MODEL_DOF; i++)
   {
     desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]);
   }
@@ -211,17 +211,17 @@ void ControlBase::jointCommandCallback(const dyros_bolt_msgs::JointCommandConstP
   }
 }
 
-void ControlBase::jummpingCommandCallback(const dyros_bolt_msgs::JumpingCommandConstPtr &msg)
-{
-  if(msg->jump_mode == dyros_bolt_msgs::JumpingCommand::JUMP)
-  {
-    jumping_controller_.setEnable(true);
-  }
-  else
-  {
-    jumping_controller_.setEnable(false);
-  }
-}
+// void ControlBase::jummpingCommandCallback(const dyros_bolt_msgs::JumpingCommandConstPtr &msg)
+// {
+//   if(msg->jump_mode == dyros_bolt_msgs::JumpingCommand::JUMP)
+//   {
+//     jumping_controller_.setEnable(true);
+//   }
+//   else
+//   {
+//     jumping_controller_.setEnable(false);
+//   }
+// }
 
 void ControlBase::shutdownCommandCallback(const std_msgs::StringConstPtr &msg)
 {

@@ -184,7 +184,7 @@ void mujoco_interface::writeDevice()
 {
   if (ctrl_mode == "position")
   {
-    mujoco_joint_set_msg_.MODE = 0;
+    mujoco_joint_set_msg_.CONTROL_MODE = 0;
 
     if(mujoco_init_receive == true)
     {
@@ -201,7 +201,7 @@ void mujoco_interface::writeDevice()
   }
   else if (ctrl_mode == "torque")
   {
-    mujoco_joint_set_msg_.MODE = 1;
+    mujoco_joint_set_msg_.CONTROL_MODE = 1;
 
     if(mujoco_init_receive == true)
     {

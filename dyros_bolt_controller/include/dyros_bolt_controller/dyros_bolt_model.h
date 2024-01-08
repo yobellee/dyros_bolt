@@ -11,6 +11,7 @@
 #include <libdwbc/dwbc.h>
 #include "math_type_define.h"
 
+// #define MODEL_DOF 6
 
 namespace dyros_bolt_controller
 {
@@ -23,7 +24,8 @@ public:
     enum EndEffector : unsigned int {EE_LEFT_FOOT, EE_RIGHT_FOOT};
 
     static constexpr size_t HW_TOTAL_DOF = 8;
-    static constexpr size_t MODEL_DOF = 8;
+    // static constexpr size_t MODEL_DOF = 6;
+
     static constexpr size_t MODEL_WITH_VIRTUAL_DOF = 14;
 
     static const std::string JOINT_NAME[HW_TOTAL_DOF];
@@ -153,7 +155,7 @@ private:
     Eigen::Vector6d q_virtual_1;
     Eigen::Vector6d q_dot_virtual_1;
 
-    Eigen::Matrix28d A_;
+    // Eigen::Matrix28d A_;
     Eigen::MatrixXd A_temp_;
 
 };

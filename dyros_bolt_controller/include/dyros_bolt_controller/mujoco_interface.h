@@ -66,7 +66,7 @@ public:
   float mujoco_sim_time;
   float mujoco_sim_last_time;
 
-  std::string joint_name_mj[DyrosBoltModel::MODEL_DOF];
+  std::string joint_name_mj[MODEL_DOF];
   ros::Rate rate_;
   int dyn_hz;
 
