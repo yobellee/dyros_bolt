@@ -127,6 +127,7 @@ void ControlBase::compute()
   for (int i = 0; i < MODEL_DOF; i++)
   {
     desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]);
+    // desired_torque_[i] = desired_q_(i);
   }
   
 
