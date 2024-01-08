@@ -73,11 +73,11 @@ void DyrosBoltModel::test()
     std::cout << leg_jacobian_[0] << std::endl << std::endl;
     std::cout << "right_leg_jacobian_" << std::endl;
     std::cout << leg_jacobian_[1] << std::endl;
-    std::cout << "currnet_transform_" << std::endl;
-    std::cout << currnet_transform_[0].translation() << std::endl << std::endl;
-    std::cout << currnet_transform_[1].translation() << std::endl << std::endl;
-    std::cout << currnet_transform_[2].translation() << std::endl << std::endl;
-    std::cout << currnet_transform_[3].translation() << std::endl << std::endl;
+    std::cout << "current_transform_" << std::endl;
+    std::cout << current_transform_[0].translation() << std::endl << std::endl;
+    std::cout << current_transform_[1].translation() << std::endl << std::endl;
+    std::cout << current_transform_[2].translation() << std::endl << std::endl;
+    std::cout << current_transform_[3].translation() << std::endl << std::endl;
     std::cout << "com" << std::endl;
     std::cout << com_<< std::endl;
 }
@@ -106,7 +106,7 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
     getCenterOfMassPositionDot(&comDot_);
     for(unsigned int i=0; i<2; i++)
     {
-        getTransformEndEffector((EndEffector)i, &currnet_transform_[i]);
+        getTransformEndEffector((EndEffector)i, &current_transform_[i]);
 
         getJacobianMatrix4DoF((EndEffector)i, &leg_jacobian_[i]);
         getJacobianMatrix14DoF((EndEffector)i, &leg_with_vlink_jacobian_[i]);

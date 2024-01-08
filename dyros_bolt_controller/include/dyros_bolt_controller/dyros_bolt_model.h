@@ -81,7 +81,7 @@ public:
     void getInertiaMatrixlegDoF(Eigen::Matrix<double, MODEL_WITH_VIRTUAL_DOF, MODEL_WITH_VIRTUAL_DOF> *leg_inertia);
 
     const Eigen::Vector12d& getCurrentExtencoder(){ return q_ext_; }
-    const Eigen::Isometry3d& getCurrentTransform(EndEffector ee) { return currnet_transform_[ee]; }
+    const Eigen::Isometry3d& getCurrentTransform(EndEffector ee) { return current_transform_[ee]; }
     const Eigen::Matrix<double, 6, 4>& getLegJacobian(EndEffector ee) { return leg_jacobian_[ee]; }
     const Eigen::Matrix<double, 6, MODEL_WITH_VIRTUAL_DOF>& getLegWithVLinkJacobian(EndEffector ee) { return leg_with_vlink_jacobian_[ee]; }
     const Eigen::Vector3d& getCurrentCom(){ return com_;}
@@ -123,7 +123,7 @@ private:
 
     Eigen::Vector3d base_position_;
 
-    Eigen::Isometry3d currnet_transform_[4];
+    Eigen::Isometry3d current_transform_[4];
 
     Eigen::Matrix<double, 6, 4> leg_jacobian_[2];
     Eigen::Matrix<double, 6, MODEL_WITH_VIRTUAL_DOF> leg_with_vlink_jacobian_[2];

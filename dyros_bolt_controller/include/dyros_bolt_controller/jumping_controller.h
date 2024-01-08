@@ -1,6 +1,7 @@
 #ifndef JUMPING_CONTROLLER_H
 #define JUMPING_CONTROLLER_H
 #include "dyros_bolt_controller/dyros_bolt_model.h"
+#include "fstream"
 
 
 namespace dyros_bolt_controller
@@ -23,6 +24,7 @@ class JumpingController
         void setTarget();
 
         void compute();
+        
         void updateControlMask(unsigned int *mask);
         void writeDesired(const unsigned int *mask, VectorQd& desired_q);
         
@@ -33,6 +35,7 @@ class JumpingController
         void getPelvTrajectory();
         void getFootTrajectory();
         void supportToFloat();
+        void circling_motion();
         void computeIK(Eigen::Isometry3d float_pelv_transform,
                        Eigen::Isometry3d float_lleg_transform,
                        Eigen::Isometry3d float_rleg_transform,
