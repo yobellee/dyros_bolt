@@ -34,7 +34,7 @@ DyrosBoltModel::DyrosBoltModel() :
     // std::string urdf_path = desc_package_path + "/robots/dyros_tocabi.urdf";
 
     ROS_INFO("Loading DYROS BOLT description from = %s",urdf_path.c_str());
-    rd_.LoadModelData(urdf_path, true, false); 
+    rd_.LoadModelData(urdf_path, true, 1); 
     ROS_INFO("Successfully loaded.");
     ROS_INFO("Total DoF = %d", rd_.model_.dof_count);
     ROS_INFO("Total DoF = %d", rd_.model_.q_size);
@@ -76,8 +76,6 @@ void DyrosBoltModel::test()
     std::cout << "current_transform_" << std::endl;
     std::cout << current_transform_[0].translation() << std::endl << std::endl;
     std::cout << current_transform_[1].translation() << std::endl << std::endl;
-    std::cout << current_transform_[2].translation() << std::endl << std::endl;
-    std::cout << current_transform_[3].translation() << std::endl << std::endl;
     std::cout << "com" << std::endl;
     std::cout << com_<< std::endl;
 }

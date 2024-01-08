@@ -123,7 +123,7 @@ private:
 
     Eigen::Vector3d base_position_;
 
-    Eigen::Isometry3d current_transform_[4];
+    Eigen::Isometry3d current_transform_[2];
 
     Eigen::Matrix<double, 6, 4> leg_jacobian_[2];
     Eigen::Matrix<double, 6, MODEL_WITH_VIRTUAL_DOF> leg_with_vlink_jacobian_[2];
