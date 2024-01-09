@@ -1,7 +1,11 @@
 # Dyros Bolt
-controller for bolt
+Controller for Bolt
 
------------------------------------------
+Bolt is [Open Dynamic Robot Initiaive](https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware/tree/master) project from Max Planck Institute for Intelligent Systems. 
+
+
+
+---------------------------------------
 
 # Installation
 ### 0. prerequisities
