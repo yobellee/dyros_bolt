@@ -40,7 +40,6 @@ void mujoco_interface::simTimeCallback(const std_msgs::Float32ConstPtr &msg)
 {
   mujoco_sim_time = msg->data;
   //ControlBase::syncSimControlTime(mujoco_sim_time);
-  //std::cout << 'asdrfsdf' <<std::endl;
 }
 
 void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr &msg)
@@ -209,6 +208,8 @@ void mujoco_interface::writeDevice()
       {
         // mujoco_joint_set_msg_.torque[i] = model_.command_Torque(i);
         mujoco_joint_set_msg_.torque[i] = desired_torque_(i);
+        // mujoco_joint_set_msg_.torque[i] = 0;
+        // std::cout << "desired torq: " <<desired_torque_(i) << std::endl;
       }
       mujoco_joint_set_msg_.header.stamp = ros::Time::now();
       mujoco_joint_set_msg_.time = mujoco_sim_time;
