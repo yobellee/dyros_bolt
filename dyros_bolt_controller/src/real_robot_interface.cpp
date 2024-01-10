@@ -85,11 +85,12 @@ void RealRobotInterface::writeDevice()
     if(areMotorsReady()){
         for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
         {
-            // if(i = 3)
+            // if(i == 0)
             // {
-            //     // odrv.setInputTorque(i, 0.0);
+            //     odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]) );
             //     // odrv.setInputTorque(i+4, 0.0);
             // }
+            // std::cout << desired_torque_(i)/k_tau[i] << std::endl;
             odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]));
             odrv.setInputTorque(i+3, double(desired_torque_(i+4)/k_tau[i+3]));
         }

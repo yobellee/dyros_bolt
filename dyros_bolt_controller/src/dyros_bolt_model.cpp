@@ -115,8 +115,8 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
     // RigidBodyDynamics::NonlinearEffects(rd_.model_, q, qdot, G_);
     RigidBodyDynamics::NonlinearEffects(model_, q, qddot, G_);
     // Gravity + Coriolis
-    std::cout << "GRAVITY" << std::endl;
-    std::cout << G_ << std::endl;
+    // std::cout << "GRAVITY";
+    // std::cout << G_.block<MODEL_DOF,1>(6,0).transpose() << std::endl;
     // std::cout << rd_.B_ << std::endl;
     command_Torque = G_.block<MODEL_DOF,1>(6,0);
     // command_Torque.setZero(MODEL_DOF);

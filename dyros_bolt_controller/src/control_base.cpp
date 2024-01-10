@@ -28,9 +28,9 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   nh.getParam("Kp", pos_kp);
   nh.getParam("Kv", pos_kv);
   nh.getParam("K_tau", k_tau);
-  for (size_t i = 0; i < k_tau.size(); ++i) {
-    k_tau[i] = 8.27 / k_tau[i];
-  }
+  // for (size_t i = 0; i < k_tau.size(); ++i) {
+  //   k_tau[i] = 0.22;
+  // }
 
   for (int i=0; i< DyrosBoltModel::HW_TOTAL_DOF; i++)
   {
