@@ -12,7 +12,7 @@ Bolt is [Open Dynamic Robot Initiaive](https://github.com/open-dynamic-robot-ini
   * This project was developed with Ubuntu 20.04 & 18.04, ROS Noetic & ROS Melodic
   * Realrobot mode uses ODrive board V3.6
   * [libdwbc](https://github.com/saga0619/libdwbc) package
-  * mscl download [MSCL](https://github.com/LORD-MicroStrain/MSCL/releases/download/v65.0.0/c++-mscl_65.0.0_amd64.deb) 
+  * [MSCL](https://github.com/LORD-MicroStrain/MSCL/releases/download/v65.0.0/c++-mscl_65.0.0_amd64.deb) download 
     ```sh
         sudo dpkg -i c++-mscl_65.0.0_amd64.deb  
     ```
