@@ -75,6 +75,7 @@ public:
 
     std::vector<double> pos_kp;
     std::vector<double> pos_kv;
+    std::vector<double> k_tau;
 
 private:
     void makeIDInverseList();

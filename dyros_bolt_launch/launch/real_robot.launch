@@ -11,4 +11,5 @@
   </include>
 
   <node name="dyros_gui" pkg="dyros_gui" type="dyros_gui" />
+  <node name="bolt_imu" pkg="bolt_imu" type="bolt_imu" />
 </launch>

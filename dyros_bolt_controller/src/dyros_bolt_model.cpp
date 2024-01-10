@@ -31,7 +31,6 @@ DyrosBoltModel::DyrosBoltModel() :
     std::string desc_package_path = ros::package::getPath("dyros_bolt_description");
     // std::string urdf_path = desc_package_path + "/robots/bolt.urdf";
     std::string urdf_path = desc_package_path + "/robots/bolt_with_passive.urdf";
-    // std::string urdf_path = desc_package_path + "/robots/dyros_tocabi.urdf";
 
     ROS_INFO("Loading DYROS BOLT description from = %s",urdf_path.c_str());
     rd_.LoadModelData(urdf_path, true, 1); 
@@ -64,10 +63,15 @@ void DyrosBoltModel::test()
     Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF+1, 1> q_vjoint;
     Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1> qdot_vjoint;
     q_vjoint.setZero();
+    q_vjoint(MODEL_WITH_VIRTUAL_DOF) = 1;
+    q_vjoint << 0, 0, 0.43, 0, 0, 0,
+                0, 0.436332313, -0.872664626, 0.436332313,
+                0, 0.436332313, -0.872664626, 0.436332313, 1;
+
     qdot_vjoint.setZero();
 
-    updateKinematics(q_vjoint, qdot_vjoint, qdot_vjoint);
 
+    updateKinematics(q_vjoint, qdot_vjoint, qdot_vjoint);
 
     std::cout << "left_leg_jacobian_" << std::endl;
     std::cout << leg_jacobian_[0] << std::endl << std::endl;
@@ -89,14 +93,17 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
 
     rd_.UpdateKinematics(q, qdot, qddot, true);
 
-    // rd_.AddContactConstraint("FL_FOOT",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
-    // rd_.AddContactConstraint("FR_FOOT",DWBC::CONTACT_POINT,Vector3d::Zero(),Vector3d(0,0,1));
+    // rd_.AddContactConstraint("FL_FOOT",DWBC::CONTACT_TYPE::CONTACT_6D,Vector3d(0,0,-0.0085),Vector3d(0,0,1), 0.0085, 0.06, false);
+    // rd_.AddContactConstraint("FR_FOOT",DWBC::CONTACT_TYPE::CONTACT_6D,Vector3d(0,0,-0.0085),Vector3d(0,0,1), 0.0085, 0.06, false);
 
-    // rd_.SetContact(1,1);
+    // rd_.SetContact(true,true);
+    // rd_.CalcContactConstraint();
     // rd_.CalcGravCompensation();
     // rd_.CalcContactRedistribute();
-    // command_Torque = rd_.torque_grav_ + rd_.torque_contact_;
 
+    // Gravity + Coriolis
+    command_Torque = rd_.B_.block<MODEL_DOF,1>(6,0);
+    // command_Torque.setZero(MODEL_DOF);
 
     getInertiaMatrixDoF(&full_inertia_mat_);
     getInertiaMatrixlegDoF(&leg_inertia_mat_);
@@ -202,7 +209,9 @@ void DyrosBoltModel::getTransformEndEffector // must call updateKinematics befor
 
 void DyrosBoltModel::getJacobianMatrix4DoF(EndEffector ee, Eigen::Matrix<double, 6, 4> *jacobian)
 {
-    *jacobian = rd_.link_[end_effector_id_[ee]-2].jac_.leftCols<4>(joint_start_index_[ee]+6);
+    *jacobian = rd_.link_[end_effector_id_[ee]-2].jac_.middleCols<4>(joint_start_index_[ee]+6);
+    // jacobian->block<1,4>(0,0) = rd_.link_[end_effector_id_[ee]-2].jac_.block<1,4>(0, joint_start_index_[ee]+6);
+    // jacobian->block<3,4>(1,0) = rd_.link_[end_effector_id_[ee]-2].jac_.block<3,4>(2, joint_start_index_[ee]+6);
 }
 
 void DyrosBoltModel::getJacobianMatrix14DoF(EndEffector ee, Eigen::Matrix<double, 6, MODEL_WITH_VIRTUAL_DOF> *jacobian)
