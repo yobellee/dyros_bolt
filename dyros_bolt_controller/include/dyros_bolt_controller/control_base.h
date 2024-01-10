@@ -32,7 +32,7 @@
 #include <dyros_bolt_msgs/TaskCommand.h>
 #include <dyros_bolt_msgs/JointCommand.h>
 #include <dyros_bolt_msgs/WalkingCommand.h>
-#include <dyros_bolt_msgs/JumpingCommand.h>
+// #include <dyros_bolt_msgs/JumpingCommand.h>
 #include <dyros_bolt_msgs/WalkingState.h>
 #include <dyros_bolt_msgs/JointControlAction.h>
 
@@ -40,7 +40,7 @@
 #include "math_type_define.h"
 #include "dyros_bolt_controller/controller.h"
 #include "dyros_bolt_controller/joint_controller.h"
-#include "dyros_bolt_controller/jumping_controller.h"
+// #include "dyros_bolt_controller/jumping_controller.h"
 #include "dyros_bolt_controller/dyros_bolt_model.h"
 
 
@@ -86,7 +86,7 @@ private:
     bool shutdown_flag_;
 
     ros::Subscriber joint_command_sub_;
-    ros::Subscriber jumping_command_sub_;
+    // ros::Subscriber jumping_command_sub_;
     ros::Subscriber shutdown_command_sub_;
 
     dyros_bolt_msgs::JointControlFeedback joint_control_feedback_;
@@ -94,7 +94,7 @@ private:
     actionlib::SimpleActionServer<dyros_bolt_msgs::JointControlAction>  joint_control_as_;  // Action Server
 
     void jointCommandCallback(const dyros_bolt_msgs::JointCommandConstPtr& msg);
-    void jummpingCommandCallback(const dyros_bolt_msgs::JumpingCommandConstPtr& msg);
+    // void jummpingCommandCallback(const dyros_bolt_msgs::JumpingCommandConstPtr& msg);
     void shutdownCommandCallback(const std_msgs::StringConstPtr& msg);
     void jointControlActionCallback(const dyros_bolt_msgs::JointControlGoalConstPtr &goal);    
 
@@ -143,7 +143,7 @@ protected:
 
     DyrosBoltModel model_;
     JointController joint_controller_;
-    JumpingController jumping_controller_;
+    // JumpingController jumping_controller_;
 
 };
 

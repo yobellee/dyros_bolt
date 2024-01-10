@@ -1,33 +1,17 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(dyros_bolt_controller)
+project(dyros_bolt_lib)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-set(COMPILE_OPTIONS -std=c++11 -g -fPIC)
-add_compile_options(${COMPILE_OPTIONS})
+add_compile_options(-O)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  actionlib
-  realtime_tools
-  geometry_msgs
-  roscpp
-  roslib
   eigen_conversions
-  sensor_msgs
-  std_msgs
-  mujoco_ros_msgs
-  tf2
-  tf2_ros
-  dyros_bolt_lib
-  dyros_bolt_description
+  roscpp
   dyros_bolt_msgs
 )
-find_package(dyros_bolt_cc QUIET)
-find_package(dwbc REQUIRED)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-find_package(Boost REQUIRED COMPONENTS system thread)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -86,7 +70,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geoometry_msgs#   sensor_msgs#   std_msgs
+#   tocabi_msgs
 # )
 
 ################################################
@@ -119,21 +103,11 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES dyros_bolt_controller
-  CATKIN_DEPENDS actionlib realtime_tools eigen_conversions geometry_msgs roscpp roslib sensor_msgs std_msgs mujoco_ros_msgs dyros_bolt_lib dyros_bolt_description dyros_bolt_msgs dyros_bolt_cc
-#  DEPENDS system_lib
+   INCLUDE_DIRS include
+   LIBRARIES dyros_bolt_lib rbdl rbdl_urdfreader qpOASES
+   CATKIN_DEPENDS eigen_conversions roscpp dyros_bolt_msgs
+   #DEPENDS system_lib
 )
-
-execute_process(COMMAND uname -r OUTPUT_VARIABLE UNAME_RES OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-message(" Controller : simulation only compile mode ")
-ADD_DEFINITIONS(-DCOMPILE_SIMULATION)
-
-IF(dyros_bolt_cc_FOUND)
-  message(" -- dyros_bolt_cc found" )
-  ADD_DEFINITIONS(-DCOMPILE_DYROS_BOLT_CC)
-ENDIF()
 
 ###########
 ## Build ##
@@ -144,48 +118,25 @@ ENDIF()
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
-  ${dyros_bolt_cc_INCLUDE_DIRS}
+  
 )
 
-file(GLOB_RECURSE HeaderFiles "include/*.h")
-add_custom_target(dyros_bolt_control_headers SOURCES ${HeaderFiles})
-file(GLOB BRIDGE_SRC
-    "src/real_robot_interface.cpp"
-    "src/mujoco_interface.cpp"
-    "src/control_base.cpp"
-    )
-file(GLOB CONTROLLER_SRC
-    "src/dyros_bolt_model.cpp"
-    "src/joint_controller.cpp"
-    # "src/jumping_controller.cpp"
-    "src/odrive_socketcan.cpp"
-    "src/state_manager.cpp"
-    "src/dyros_bolt_controller.cpp"
-    )
-
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/dyros_bolt_controller.cpp
-# )
-
-add_library(${PROJECT_NAME}_lib
-    ${BRIDGE_SRC}
-    ${CONTROLLER_SRC}
-    )
+add_library(${PROJECT_NAME}
+  src/link.cpp
+  src/qp.cpp
+  src/wholebody_functions.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME} src/main.cpp)
-add_executable(shutdown src/shutdown.cpp)
-add_executable(shm_reset src/shm_manager.cpp)
+# add_executable(${PROJECT_NAME}_node src/tocabi_data_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -198,24 +149,8 @@ add_executable(shm_reset src/shm_manager.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
-target_link_libraries(${PROJECT_NAME}_lib
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
-    -L/usr/local/lib
-    -lrbdl
-    -lrbdl_urdfreader
-    ${dyros_bolt_cc_LIBRARIES}
-    dwbc
-    -lpthread
-    # -lqpOASES
-)
 target_link_libraries(${PROJECT_NAME}
-  ${PROJECT_NAME}_lib
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}  
 )
 
 #############
@@ -240,18 +175,18 @@ target_link_libraries(${PROJECT_NAME}
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -259,24 +194,16 @@ target_link_libraries(${PROJECT_NAME}
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
-add_dependencies(${PROJECT_NAME}_lib ${catkin_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
-add_dependencies(shm_reset ${catkin_EXPORTED_TARGETS})
 
-
-SET(CMAKE_BUILD_TYPE Release)
 #############
 ## Testing ##
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_dyros_bolt_controller.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_tocabi_data.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-
-

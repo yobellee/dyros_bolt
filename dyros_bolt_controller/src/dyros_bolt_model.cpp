@@ -6,7 +6,7 @@ namespace dyros_bolt_controller
 {
 constexpr const char* DyrosBoltModel::EE_NAME[2];
 constexpr const size_t DyrosBoltModel::HW_TOTAL_DOF;
-constexpr const size_t DyrosBoltModel::MODEL_DOF;
+// constexpr const size_t DyrosBoltModel::MODEL_DOF;
 
 constexpr const size_t DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF;
   
