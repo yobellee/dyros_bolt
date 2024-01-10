@@ -27,6 +27,10 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
 
   nh.getParam("Kp", pos_kp);
   nh.getParam("Kv", pos_kv);
+  nh.getParam("K_tau", k_tau);
+  // for (size_t i = 0; i < k_tau.size(); ++i) {
+  //   k_tau[i] = 0.22;
+  // }
 
   for (int i=0; i< DyrosBoltModel::HW_TOTAL_DOF; i++)
   {
@@ -126,8 +130,9 @@ void ControlBase::compute()
   // Torque Control
   for (int i = 0; i < MODEL_DOF; i++)
   {
-    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]);
+    // desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]);
     // desired_torque_[i] = desired_q_(i);
+    desired_torque_[i] = model_.command_Torque(i);
   }
   
 

@@ -112,8 +112,8 @@ public:
     const Eigen::Matrix<double, MODEL_WITH_VIRTUAL_DOF, MODEL_WITH_VIRTUAL_DOF>& getFullInertia() { return full_inertia_mat_; }
 
 private:
-    DWBC::RobotData rd_;
-    // RigidBodyDynamics::Model model_;
+    // DWBC::RobotData rd_;
+    RigidBodyDynamics::Model model_;
     
     Eigen::Vector6d q_;
     Eigen::Matrix<double, MODEL_WITH_VIRTUAL_DOF, 1> q_virtual_;
