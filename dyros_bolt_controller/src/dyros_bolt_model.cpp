@@ -43,7 +43,7 @@ DyrosBoltModel::DyrosBoltModel() :
     // ROS_INFO("Total DoF = %d", rd_.model_.qdot_size);
     ROS_INFO("Total DoF = %d", model_.qdot_size);
 
-    if(rd_.model_.dof_count != MODEL_WITH_VIRTUAL_DOF)
+    if(model_.dof_count != MODEL_WITH_VIRTUAL_DOF)
     {
         ROS_WARN("The DoF in the model file and the code do not match.");
         // ROS_WARN("Model file = %d, Code = %d", rd_.model_.dof_count, (int)MODEL_WITH_VIRTUAL_DOF);
@@ -305,13 +305,13 @@ void DyrosBoltModel::getCenterOfMassPositionDot(Eigen::Vector3d* position_dot)
 
 void DyrosBoltModel::getInertiaMatrixDoF(Eigen::Matrix<double, MODEL_WITH_VIRTUAL_DOF, MODEL_WITH_VIRTUAL_DOF> *inertia)
 {
-    *inertia = rd_.A_;
+    // *inertia = rd_.A_;
 }
 
 void DyrosBoltModel::getInertiaMatrixlegDoF(Eigen::Matrix<double, MODEL_WITH_VIRTUAL_DOF, MODEL_WITH_VIRTUAL_DOF> *leg_inertia)
 {
 //   leg_inertia->block<MODEL_WITH_VIRTUAL_DOF, MODEL_WITH_VIRTUAL_DOF>(0, 0) = rd_.A_.block<MODEL_WITH_VIRTUAL_DOF, MODEL_WITH_VIRTUAL_DOF>(0, 0);
-    *leg_inertia = rd_.A_;
+    // *leg_inertia = rd_.A_;
 }
 
 }

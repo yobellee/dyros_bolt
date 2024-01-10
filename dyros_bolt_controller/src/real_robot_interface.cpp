@@ -90,8 +90,8 @@ void RealRobotInterface::writeDevice()
             //     // odrv.setInputTorque(i, 0.0);
             //     // odrv.setInputTorque(i+4, 0.0);
             // }
-            odrv.setInputTorque(i, double(k_tau[i] * desired_torque_(i)));
-            odrv.setInputTorque(i+3, double(k_tau[i+3] * desired_torque_(i+4)));
+            odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]));
+            odrv.setInputTorque(i+3, double(desired_torque_(i+4)/k_tau[i+3]));
         }
     }
 }
