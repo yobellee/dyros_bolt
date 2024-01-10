@@ -121,7 +121,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES dyros_bolt_controller
-  CATKIN_DEPENDS actionlib realtime_tools eigen_conversions geometry_msgs roscpp roslib sensor_msgs std_msgs mujoco_ros_msgs dyros_bolt_lib dyros_bolt_description dyros_bolt_msgs
+  CATKIN_DEPENDS actionlib realtime_tools eigen_conversions geometry_msgs roscpp roslib sensor_msgs std_msgs mujoco_ros_msgs dyros_bolt_lib dyros_bolt_description dyros_bolt_msgs dyros_bolt_cc
 #  DEPENDS system_lib
 )
 
@@ -132,7 +132,7 @@ ADD_DEFINITIONS(-DCOMPILE_SIMULATION)
 
 IF(dyros_bolt_cc_FOUND)
   message(" -- dyros_bolt_cc found" )
-  # ADD_DEFINITIONS(-DCOMPILE_DYROS_BOLT_CC)
+  ADD_DEFINITIONS(-DCOMPILE_DYROS_BOLT_CC)
 ENDIF()
 
 ###########
@@ -207,7 +207,7 @@ target_link_libraries(${PROJECT_NAME}_lib
     -L/usr/local/lib
     -lrbdl
     -lrbdl_urdfreader
-    ${dyras_bolt_cc_LIBRARIES}
+    ${dyros_bolt_cc_LIBRARIES}
     dwbc
     -lpthread
     # -lqpOASES
