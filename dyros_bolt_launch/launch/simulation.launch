@@ -1,0 +1,29 @@
+<launch>
+    <arg name="gui" default="false" />
+    <arg name="controller" default="true" />
+    <arg name="log" default="false"/>
+    <arg name="node_start_delay" default="0.2" />  
+    
+    <node name="dyros_bolt_controller_shm_reset" pkg="dyros_bolt_controller" type="shm_reset" output="screen"/>
+    <node name="mujoco_ros" pkg="mujoco_ros" type="mujoco_ros" required="true" respawn="false" output="screen" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
+        <param name="license" type="string" value="$(env HOME)/mjkey.txt" />
+        <param name="use_shm" value="true" />
+        <!-- <param name="model_file" type="string" value="$(find dyros_bolt_description)/robots/bolt_6dof.xml"/> -->
+    </node>
+
+    <param name="dyros_bolt_controller/urdf_path" type="string " value="$(find dyros_bolt_description)/robots/bolt.urdf" />
+    <param name="mujoco_ros/model_file" type="string" value="$(find dyros_bolt_description)/mujoco_model/bolt_6dof.xml" />
+    <param name="dyros_bolt_controller/sim_mode" value="true" />
+        
+    <rosparam command="load" file="$(find dyros_bolt_description)/setting/setting_simulation_positionPDgain.yaml" ns="/dyros_bolt_controller" />
+    <rosparam command="load" file="$(find dyros_bolt_description)/setting/setting_simulation_parameters.yaml" ns="/dyros_bolt_controller" />
+    
+    <group if="$(arg controller)">
+        <node name="dyros_bolt_controller" pkg="dyros_bolt_controller" type="dyros_bolt_controller" output="screen" required="true" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "/>
+    </group>
+    <group if="$(arg gui)">
+        <node name="dyros_bolt_gui" pkg="dyros_bolt_gui" type="dyros_bolt_gui" />
+    </group>
+    
+
+</launch>

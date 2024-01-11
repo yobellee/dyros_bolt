@@ -1,0 +1,17 @@
+TaskControlWarn: 500
+TaskControlStop: 1000
+
+TaskGainPCOM: [400, 400, 400, 400, 400, 400]
+TaskGainDCOM: [40, 40, 40, 40, 40, 40]
+TaskGainACOM: [1, 1, 1, 1, 1, 1]
+TaskGainPbase: [400, 400, 400, 400, 400, 400]
+TaskGainDbase: [40, 40, 40, 40, 40, 40]
+TaskGainAbase: [1, 1, 1, 1, 1, 1]
+TaskGainPFoot: [400, 400, 400, 400, 400, 400]
+TaskGainDFoot: [40, 40, 40, 40, 40, 40]
+TaskGainAFoot: [1, 1, 1, 1, 1, 1]
+
+# FL_HAA FL_HFE FL_KFE FL_ANKLE
+# FR_HAA FR_HFE FR_KFE FR_ANKLE
+NM2CNT: [1, 1, 1,
+         1, 1, 1]

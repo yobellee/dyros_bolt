@@ -40,3 +40,9 @@ sudo apt install qtbase5-private-dev libqt5x11extras5*
 cd catkin_ws/src
 git clone https://github.com/yongarry/dyros_bolt_gui
 ```
+
+### 5. V2.0
+
+  **Shared Memory, Multithreading, and Custom Controller Implementations**
+
+  **Note:** This section is currently undergoing a major update.

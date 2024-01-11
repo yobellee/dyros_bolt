@@ -193,7 +193,7 @@ void *DyrosBoltController::Thread1()
                     rd_.torque_desired[i] = rd_.pos_kp_v[i] * (rd_.q_desired[i] - rd_.q_[i]) + rd_.pos_kv_v[i] * (zero_m[i] - rd_.q_dot_[i]);
                 }
             }
-            else if (rd_.tc_run)  //ANCHOR - torque control mode
+            else if (rd_.tc_run)  //ANCHOR - torque control run
             { 
 
                 if (rd_.tc_.mode == 0) 
