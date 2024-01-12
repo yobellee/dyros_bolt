@@ -5,7 +5,13 @@ using namespace dyros_bolt_controller;
 
 #include <math.h>
 
+// volatile bool *prog_shutdown;
 
+// void SIGINT_handler(int sig)
+// {
+//     cout << " CNTRL : shutdown Signal" << endl;
+//     *prog_shutdown = true;
+// }
 
 int main(int argc, char **argv)
 {
@@ -15,8 +21,10 @@ int main(int argc, char **argv)
     std::string mode;
     nh.param<std::string>("run_mode", mode, "simulation");
     ControlBase *ctr_obj;
-    ROS_INFO("!!!!!!!");
     
+    // int shm_id_;
+    // init_shm(shm_msg_key, shm_id_, &ctr_obj->tc_shm_);
+    // prog_shutdown = &ctr_obj->tc_shm_->shutdown;
 
     double Hz;
     nh.param<double>("control_frequency", Hz, 150.0);
@@ -50,7 +58,6 @@ int main(int argc, char **argv)
           break;
         }
     }
-
     delete ctr_obj;
 
     return 0;

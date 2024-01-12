@@ -153,7 +153,7 @@ private:
     Eigen::Vector6d q_virtual_1;
     Eigen::Vector6d q_dot_virtual_1;
 
-    Eigen::Matrix28d A_;
+    Eigen::MatrixXd A_;
     Eigen::MatrixXd A_temp_;
 
 };
