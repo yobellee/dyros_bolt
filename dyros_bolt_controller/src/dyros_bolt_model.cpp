@@ -100,32 +100,21 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
     // q_virtual_dot_ = qdot;
     // q_virtual_ddot_ = qddot;
 
-
-    // rd_.UpdateKinematics(q, qdot, qddot, true);
     RigidBodyDynamics::UpdateKinematicsCustom(model_, &q, &qdot, &qddot);
 
-    // rd_.AddContactConstraint("FL_FOOT",DWBC::CONTACT_TYPE::CONTACT_6D,Vector3d(0,0,-0.0085),Vector3d(0,0,1), 0.0085, 0.06, false);
-    // rd_.AddContactConstraint("FR_FOOT",DWBC::CONTACT_TYPE::CONTACT_6D,Vector3d(0,0,-0.0085),Vector3d(0,0,1), 0.0085, 0.06, false);
-
-    // rd_.SetContact(true,true);
-    // rd_.CalcContactConstraint();
-    // rd_.CalcGravCompensation();
-    // rd_.CalcContactRedistribute();
     VectorXd G_, B_;
     G_.setZero(MODEL_WITH_VIRTUAL_DOF);
     B_.setZero(MODEL_WITH_VIRTUAL_DOF);
 
     RigidBodyDynamics::NonlinearEffects(model_, q, qddot, G_);
     RigidBodyDynamics::NonlinearEffects(model_, q, qdot, B_);
+
     // Gravity + Coriolis
-    std::cout << "GRAVITY"<<std::endl;
+    // std::cout << "GRAVITY"<<std::endl;
     // std::cout << G_.block<MODEL_DOF,1>(6,0).transpose() << std::endl;
     // std::cout << B_.block<MODEL_DOF,1>(6,0).transpose() << std::endl;
-    // torque_txt << G_.block<MODEL_DOF,1>(6,0).transpose() << "\n";
-    // std::cout << rd_.B_ << std::endl;
+
     command_Torque = B_.block<MODEL_DOF,1>(6,0);
-    // std::cout << command_Torque.transpose() << std::endl<< std::endl;
-    
     // command_Torque.setZero(MODEL_DOF);
 
     // getInertiaMatrixDoF(&full_inertia_mat_);
