@@ -36,28 +36,21 @@ DyrosBoltModel::DyrosBoltModel() :
 
     ROS_INFO("Loading DYROS BOLT description from = %s",urdf_path.c_str());
     RigidBodyDynamics::Addons::URDFReadFromFile(urdf_path.c_str(), &model_, true, false);
-    // rd_.LoadModelData(urdf_path, true, 1); 
     ROS_INFO("Successfully loaded.");
-    // ROS_INFO("Total DoF = %d", rd_.model_.dof_count);
     ROS_INFO("Total DoF = %d", model_.dof_count);
-    // ROS_INFO("Total DoF = %d", rd_.model_.q_size);
     ROS_INFO("Total DoF = %d", model_.q_size);
-    // ROS_INFO("Total DoF = %d", rd_.model_.qdot_size);
     ROS_INFO("Total DoF = %d", model_.qdot_size);
 
     if(model_.dof_count != MODEL_WITH_VIRTUAL_DOF)
     {
         ROS_WARN("The DoF in the model file and the code do not match.");
-        // ROS_WARN("Model file = %d, Code = %d", rd_.model_.dof_count, (int)MODEL_WITH_VIRTUAL_DOF);
         ROS_WARN("Model file = %d, Code = %d", model_.dof_count, (int)MODEL_WITH_VIRTUAL_DOF);
     }
 
     for (size_t i=0; i<2; i++)
     {
-        // end_effector_id_[i] = rd_.model_.GetBodyId(EE_NAME[i]);
         end_effector_id_[i] = model_.GetBodyId(EE_NAME[i]);
         ROS_INFO("%s: id - %d",EE_NAME[i], end_effector_id_[i]);
-        // std::cout << rd_.model_.mBodies[end_effector_id_[i]].mCenterOfMass << std::endl;
         std::cout << model_.mBodies[end_effector_id_[i]].mCenterOfMass << std::endl;
     }
 
@@ -75,8 +68,8 @@ void DyrosBoltModel::test()
     q_vjoint.setZero();
     q_vjoint(MODEL_WITH_VIRTUAL_DOF) = 1;
     // q_vjoint << 0, 0, 0.43, 0, 0, 0,
-    //             1.57, 1.57, 0, 0,
-    //             0, 0, 0, 0;
+                // 0, 0.436332313, -0.872664626, 0.436332313,
+                // 0, 0.436332313, -0.872664626, 0.436332313;
 
     qdot_vjoint.setZero();
 

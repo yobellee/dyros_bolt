@@ -104,7 +104,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
    INCLUDE_DIRS include
-   LIBRARIES dyros_bolt_lib rbdl rbdl_urdfreader qpOASES
+  #  LIBRARIES dyros_bolt_lib rbdl rbdl_urdfreader qpOASES
+   LIBRARIES dyros_bolt_lib 
    CATKIN_DEPENDS eigen_conversions roscpp dyros_bolt_msgs
    #DEPENDS system_lib
 )
@@ -122,7 +123,7 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} INTERFACE)
 #   src/link.cpp
 #   src/qp.cpp
 #   src/wholebody_functions.cpp

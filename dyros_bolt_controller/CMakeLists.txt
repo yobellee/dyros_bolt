@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   mujoco_ros_msgs
   dyros_bolt_lib
 )
-find_package(dwbc REQUIRED)
+# find_package(dwbc REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
@@ -142,7 +142,7 @@ file(GLOB BRIDGE_SRC
 file(GLOB CONTROLLER_SRC
     "src/dyros_bolt_model.cpp"
     "src/joint_controller.cpp"
-    "src/jumping_controller.cpp"
+    "src/custom_controller.cpp"
     "src/odrive_socketcan.cpp"
     )
 
@@ -194,7 +194,7 @@ target_link_libraries(dyros_bolt_controller
   dyros_bolt_controller_lib
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
-  dwbc
+  # dwbc
 )
 
 #############

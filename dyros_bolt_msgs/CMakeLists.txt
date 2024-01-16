@@ -18,7 +18,7 @@ add_message_files(
   JointCommand.msg
   TaskCommand.msg
   WalkingCommand.msg
-  JumpingCommand.msg
+  CustomCommand.msg
   WalkingState.msg
 )
 

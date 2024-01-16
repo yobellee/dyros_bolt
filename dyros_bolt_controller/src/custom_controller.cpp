@@ -1,31 +1,28 @@
-#include "dyros_bolt_controller/jumping_controller.h"
+#include "dyros_bolt_controller/custom_controller.h"
 #include "dyros_bolt_controller/dyros_bolt_model.h"
 
 namespace dyros_bolt_controller
 {
-    // std::ofstream lleg_x_traj("/home/yong/Desktop/lleg_x_traj.txt");
-    // std::ofstream lleg_z_traj("/home/yong/Desktop/lleg_z_traj.txt");
-    // std::ofstream rleg_x_traj("/home/yong/Desktop/rleg_x_traj.txt");
-    // std::ofstream rleg_z_traj("/home/yong/Desktop/rleg_z_traj.txt");
-void JumpingController::setEnable(bool enable)
+    // std::ofstream output("/home/yong/Desktop/data.txt");
+void CustomController::setEnable(bool enable)
 {
-    jumping_enable_ = enable;
+    walking_enable_ = enable;
     desired_q_ = current_q_;
 }
 
-void JumpingController::setTarget()
+void CustomController::setTarget()
 {
     parameterSetting();
 }
 
-void JumpingController::parameterSetting()
+void CustomController::parameterSetting()
 {
-    jumping_tick_ = 0;
+    walking_tick_ = 0;
 }
 
-void JumpingController::compute()
+void CustomController::compute()
 {
-    if(jumping_enable_ == true)
+    if(walking_enable_ == true)
     {
         updateInitialState();  
         getRobotState();  
@@ -37,27 +34,11 @@ void JumpingController::compute()
             // getFootTrajectory();
             // supportToFloat();
             circling_motion();
-            
             computeIK(pelv_traj_float_, lfoot_traj_float_, rfoot_traj_float_, q_des);
 
-            // double lleg_x_val;
-            // double lleg_z_val;
-            // double rleg_x_val;
-            // double rleg_z_val;
-            
-            // lleg_x_val = (-1) * (0.2 * sin(q_des(1) + 0.2 * sin(q_des(2))));
-            // lleg_z_val = (-1) * (0.0386 + 0.2 * cos(q_des(1)) + 0.2 * cos(q_des(2)));
-            // rleg_x_val = (-1) * (0.2 * sin(q_des(5) + 0.2 * sin(q_des(6))));
-            // rleg_z_val = (-1) * (0.0386 + 0.2 * cos(q_des(5)) + 0.2 * cos(q_des(6)));
-
-            // lleg_x_traj << lleg_x_val << "\n";
-            // lleg_x_traj.close();
-            // lleg_z_traj << lleg_z_val;
-            // lleg_z_traj.close();
-            // rleg_x_traj << rleg_x_val;
-            // rleg_x_traj.close();
-            // rleg_z_traj << rleg_z_val;
-            // rleg_z_traj.close();
+            // output << walking_tick_ <<"\t" << lfoot_traj_float_.translation()(2) <<"\t" << lfoot_traj_float_.translation()(0) << "\t" 
+            //                                << rfoot_traj_float_.translation()(2) <<"\t" << rfoot_traj_float_.translation()(0) << "\t"
+            //                                << q_des(0) << "\t" << q_des(1) << "\t" << q_des(2) << "\t" << q_des(3) << "\t" << q_des(4) << "\t" << q_des(5) << "\t" << q_des(6) << "\t" << q_des(7) << "\n";
 
             for(int i=0; i<8; i++)
             { desired_q_(i) = q_des(i); } 
@@ -69,29 +50,32 @@ void JumpingController::compute()
             desired_q_ = current_q_;
         }
     }
+    else
+    {
+        desired_q_ = current_q_;
+    }
 }
 
-void JumpingController::circling_motion()
+void CustomController::circling_motion()
 {
   pelv_traj_float_.translation().setZero();
   pelv_traj_float_.linear().setIdentity();
 
-  rfoot_traj_float_.translation()(0) = -0.005 * cos(0.00001*M_PI*jumping_tick_/hz_);
-  rfoot_traj_float_.translation()(1) = -0.0599;
-  rfoot_traj_float_.translation()(2) = -0.4386 + 0.005 * sin(0.00001*M_PI*jumping_tick_/hz_);
+  rfoot_traj_float_.translation()(0) = -0.025 * cos(0.5*M_PI*walking_tick_/hz_);
+  rfoot_traj_float_.translation()(1) = -0.1235;
+  rfoot_traj_float_.translation()(2) = -0.401123114 + 0.025 * sin(0.5*M_PI*walking_tick_/hz_);
 
-  lfoot_traj_float_.translation()(0) = -0.005 * cos(0.00001*M_PI*(jumping_tick_/hz_ - 1.0));
-  lfoot_traj_float_.translation()(1) =  0.0599;
-  lfoot_traj_float_.translation()(2) = -0.4386 + 0.005 * sin(0.00001*M_PI*(jumping_tick_/hz_ - 1.0));
+  lfoot_traj_float_.translation()(0) = -0.025 * cos(0.5*M_PI*(walking_tick_/hz_ - 1.0));
+  lfoot_traj_float_.translation()(1) =  0.1235;
+  lfoot_traj_float_.translation()(2) = -0.401123114 + 0.025 * sin(0.5*M_PI*(walking_tick_/hz_ - 1.0));
 
   lfoot_traj_float_.linear().setIdentity();
   rfoot_traj_float_.linear().setIdentity();
-  std::cout << jumping_tick_ << std::endl;
 }
 
-void JumpingController::updateControlMask(unsigned int *mask)
+void CustomController::updateControlMask(unsigned int *mask)
 {
-    if(jumping_enable_)
+    if(walking_enable_)
     {
         for (int i=0; i<total_dof_; i++)
         {
@@ -109,7 +93,7 @@ void JumpingController::updateControlMask(unsigned int *mask)
     }
 }
 
-void JumpingController::writeDesired(const unsigned int *mask, VectorQd& desired_q)
+void CustomController::writeDesired(const unsigned int *mask, VectorQd& desired_q)
 {
     for(unsigned int i=0; i<total_dof_; i++)
     {     
@@ -120,19 +104,19 @@ void JumpingController::writeDesired(const unsigned int *mask, VectorQd& desired
     }
 }
 
-void JumpingController::updateInitialState()
+void CustomController::updateInitialState()
 {
-    if(jumping_tick_ == 0)
+    if(walking_tick_ == 0)
     {
         com_float_init_ = model_.getCurrentCom();
         pelv_float_init_.setIdentity();
         lfoot_float_init_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)(0));
-        rfoot_float_init_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)(1));  
+        rfoot_float_init_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)(1)); 
     }
 
 }
 
-void JumpingController::getRobotState()
+void CustomController::getRobotState()
 {
     Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF+1, 1> q_temp;
     Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1>  qdot_temp, qddot_temp;
@@ -153,33 +137,33 @@ void JumpingController::getRobotState()
 
 }
 
-void JumpingController::getComTrajectory()
+void CustomController::getComTrajectory()
 {
 
 }
 
-void JumpingController::getPelvTrajectory()
+void CustomController::getPelvTrajectory()
 {
 
     pelv_traj_float_.translation()(0) = pelv_float_init_.translation()(0);
     pelv_traj_float_.translation()(1) = pelv_float_init_.translation()(1);
     pelv_traj_float_.translation()(2) = pelv_float_current_.translation()(2) 
-        + 1.0*(DyrosMath::cubic(jumping_tick_, 0, 2*hz_, pelv_float_init_.translation()(2), pelv_float_init_.translation()(2)-0.05,0,0) - pelv_float_current_.translation()(2));
+        + 1.0*(DyrosMath::cubic(walking_tick_, 0, 2*hz_, pelv_float_init_.translation()(2), pelv_float_init_.translation()(2)-0.05,0,0) - pelv_float_current_.translation()(2));
 }   
 
-void JumpingController::getFootTrajectory()
+void CustomController::getFootTrajectory()
 {
     lfoot_traj_float_ = lfoot_float_init_;
     rfoot_traj_float_ = rfoot_float_init_;
 }
 
-void JumpingController::supportToFloat()
+void CustomController::supportToFloat()
 {
 
 }
 
 
-// void JumpingController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::Isometry3d float_lleg_transform, Eigen::Isometry3d float_rleg_transform, Eigen::Vector8d& q_des)
+// void CustomController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::Isometry3d float_lleg_transform, Eigen::Isometry3d float_rleg_transform, Eigen::Vector8d& q_des)
 // {
 //     Eigen::Vector3d L_r, R_r;
 //     Eigen::Matrix3d L_Hip_rot, R_Hip_rot;
@@ -214,7 +198,7 @@ void JumpingController::supportToFloat()
 //     q_des(7) = 0;
 // }  
 
-void JumpingController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::Isometry3d float_lleg_transform, Eigen::Isometry3d float_rleg_transform, Eigen::Vector8d& q_des)
+void CustomController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::Isometry3d float_lleg_transform, Eigen::Isometry3d float_rleg_transform, Eigen::Vector8d& q_des)
 {
     Eigen::Vector3d L_r, R_r;
     Eigen::Vector3d L_hip, R_hip;
@@ -308,9 +292,9 @@ void JumpingController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen:
     q_des(7) = -atan2(R_r(0), sqrt(pow(R_r(1),2) + pow(R_r(2),2))) + R_alpha;
 }
 
-void JumpingController::updateNextStepTime()
+void CustomController::updateNextStepTime()
 {
-    jumping_tick_ ++;
+    walking_tick_ ++;
 }
 
 

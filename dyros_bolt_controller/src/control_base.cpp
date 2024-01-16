@@ -6,7 +6,7 @@ namespace dyros_bolt_controller
 ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   is_first_boot_(true), Hz_(Hz), control_mask_{}, total_dof_(DyrosBoltModel::HW_TOTAL_DOF),shutdown_flag_(false),
   joint_controller_(q_, q_dot_filtered_, control_time_),
-  jumping_controller_(model_, q_, q_dot_filtered_, Hz, control_time_),
+  custom_controller_(model_, q_, q_dot_filtered_, Hz, control_time_),
   joint_control_as_(nh, "/dyros_bolt/joint_control", false)
 {
   makeIDInverseList();
@@ -42,7 +42,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   }
 
   joint_command_sub_ = nh.subscribe("/dyros_bolt/joint_command", 3, &ControlBase::jointCommandCallback, this);
-  jumping_command_sub_ = nh.subscribe("/dyros_bolt/jumping_command",3, &ControlBase::jummpingCommandCallback,this);
+  custom_command_sub_ = nh.subscribe("/dyros_bolt/custom_command",3, &ControlBase::jummpingCommandCallback,this);
   shutdown_command_sub_ = nh.subscribe("/dyros_bolt/shutdown_command", 1, &ControlBase::shutdownCommandCallback,this);
   parameterInitialize();
   model_.test();
@@ -119,13 +119,13 @@ void ControlBase::compute()
 {
 
   joint_controller_.compute();
-  jumping_controller_.compute();
+  custom_controller_.compute();
 
   joint_controller_.updateControlMask(control_mask_);
-  jumping_controller_.updateControlMask(control_mask_);
+  custom_controller_.updateControlMask(control_mask_);
 
   joint_controller_.writeDesired(control_mask_, desired_q_);
-  jumping_controller_.writeDesired(control_mask_, desired_q_);
+  custom_controller_.writeDesired(control_mask_, desired_q_);
 
   // Torque Control
   for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)
@@ -217,15 +217,15 @@ void ControlBase::jointCommandCallback(const dyros_bolt_msgs::JointCommandConstP
   }
 }
 
-void ControlBase::jummpingCommandCallback(const dyros_bolt_msgs::JumpingCommandConstPtr &msg)
+void ControlBase::jummpingCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr &msg)
 {
-  if(msg->jump_mode == dyros_bolt_msgs::JumpingCommand::JUMP)
+  if(msg->jump_mode == dyros_bolt_msgs::CustomCommand::WALK)
   {
-    jumping_controller_.setEnable(true);
+    custom_controller_.setEnable(true);
   }
   else
   {
-    jumping_controller_.setEnable(false);
+    custom_controller_.setEnable(false);
   }
 }
 
