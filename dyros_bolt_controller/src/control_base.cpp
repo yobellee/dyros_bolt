@@ -42,7 +42,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   }
 
   joint_command_sub_ = nh.subscribe("/dyros_bolt/joint_command", 3, &ControlBase::jointCommandCallback, this);
-  custom_command_sub_ = nh.subscribe("/dyros_bolt/custom_command",3, &ControlBase::jummpingCommandCallback,this);
+  custom_command_sub_ = nh.subscribe("/dyros_bolt/custom_command",3, &ControlBase::customCommandCallback,this);
   shutdown_command_sub_ = nh.subscribe("/dyros_bolt/shutdown_command", 1, &ControlBase::shutdownCommandCallback,this);
   parameterInitialize();
   model_.test();
@@ -217,9 +217,9 @@ void ControlBase::jointCommandCallback(const dyros_bolt_msgs::JointCommandConstP
   }
 }
 
-void ControlBase::jummpingCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr &msg)
+void ControlBase::customCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr &msg)
 {
-  if(msg->jump_mode == dyros_bolt_msgs::CustomCommand::WALK)
+  if(msg->custom_mode == dyros_bolt_msgs::CustomCommand::WALK)
   {
     custom_controller_.setEnable(true);
   }

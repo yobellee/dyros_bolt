@@ -96,7 +96,7 @@ private:
     actionlib::SimpleActionServer<dyros_bolt_msgs::JointControlAction>  joint_control_as_;  // Action Server
 
     void jointCommandCallback(const dyros_bolt_msgs::JointCommandConstPtr& msg);
-    void jummpingCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr& msg);
+    void customCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr& msg);
     void shutdownCommandCallback(const std_msgs::StringConstPtr& msg);
     void jointControlActionCallback(const dyros_bolt_msgs::JointControlGoalConstPtr &goal);    
 
