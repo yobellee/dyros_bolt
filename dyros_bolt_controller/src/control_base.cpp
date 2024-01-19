@@ -222,6 +222,7 @@ void ControlBase::customCommandCallback(const dyros_bolt_msgs::CustomCommandCons
   if(msg->custom_mode == dyros_bolt_msgs::CustomCommand::WALK)
   {
     custom_controller_.setEnable(true);
+    custom_controller_.setTarget(msg->first_foot_step, msg->x, msg->y, msg->z, msg->theta, msg->step_length_x, msg->step_length_y);
   }
   else
   {
