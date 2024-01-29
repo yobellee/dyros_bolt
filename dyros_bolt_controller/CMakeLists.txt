@@ -4,13 +4,12 @@ list(APPEND CMAKE_PREFIX_PATH "/home/yong/Downloads/libtorch")
 project(dyros_bolt_controller)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
 # add_compile_options(-std=c++11 -g)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(Torch REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   realtime_tools
@@ -27,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(dwbc REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system thread)
-
+find_package(Torch REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -133,10 +132,10 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
-  # ${TORCH_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
+  ${TORCH_INCLUDE_DIRS}
 )
 file(GLOB_RECURSE HeaderFiles "include/*.h")
 add_custom_target(dyros_bolt_control_headers SOURCES ${HeaderFiles})

@@ -41,6 +41,7 @@
 #include "dyros_bolt_controller/controller.h"
 #include "dyros_bolt_controller/joint_controller.h"
 #include "dyros_bolt_controller/custom_controller.h"
+#include "dyros_bolt_controller/rl_controller.h"
 #include "dyros_bolt_controller/dyros_bolt_model.h"
 #include "shm_msgs.h"
 
@@ -90,6 +91,7 @@ private:
     ros::Subscriber joint_command_sub_;
     ros::Subscriber custom_command_sub_;
     ros::Subscriber shutdown_command_sub_;
+    ros::Subscriber rl_command_sub_;
 
     dyros_bolt_msgs::JointControlFeedback joint_control_feedback_;
     dyros_bolt_msgs::JointControlResult joint_control_result_;
@@ -98,7 +100,8 @@ private:
     void jointCommandCallback(const dyros_bolt_msgs::JointCommandConstPtr& msg);
     void customCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr& msg);
     void shutdownCommandCallback(const std_msgs::StringConstPtr& msg);
-    void jointControlActionCallback(const dyros_bolt_msgs::JointControlGoalConstPtr &goal);    
+    void jointControlActionCallback(const dyros_bolt_msgs::JointControlGoalConstPtr &goal);   
+    void rlCommandCallback(const std_msgs::BoolConstPtr& msg); 
 
 protected:
     realtime_tools::RealtimePublisher<dyros_bolt_msgs::JointState> joint_state_pub_; 
@@ -123,6 +126,7 @@ protected:
     Vector6d right_foot_ft_; // current right ft sensor values
 
     tf::Quaternion imu_data_; ///< IMU data with filter
+    Eigen::Quaterniond base_quat_; ///< IMU data without filter
     Vector4d imu_data_quat; 
     Vector3d gyro_; // current gyro sensor values
     Vector3d accelometer_; // current accelometer values
@@ -149,6 +153,7 @@ protected:
     DyrosBoltModel model_;
     JointController joint_controller_;
     CustomController custom_controller_;
+    RLController rl_controller_;
 
 };
 

@@ -132,7 +132,23 @@ void mujoco_interface::sensorStateCallback(const mujoco_ros_msgs::SensorStateCon
             }
 
         }
+        if(msg->sensor[i].name=="Pelvis_quat"){
+            base_quat_.x() = msg->sensor[i].data[0];
+            base_quat_.y() = msg->sensor[i].data[1];
+            base_quat_.z() = msg->sensor[i].data[2];
+            base_quat_.w() = msg->sensor[i].data[3];
+        }
 
+        // if(msg->sensor[i].name=="Pelvis_linear_vel"){
+        //     for(int j=0;j<3;j++){
+        //         mujoco_virtual_(j) = msg->sensor[i].data[j];
+        //     }
+        // }
+        // if(msg->sensor[i].name=="Pelvis_angular_vel"){
+        //     for(int j=0;j<3;j++){
+        //         mujoco_virtual_(j+3) = msg->sensor[i].data[j];
+        //     }
+        // }
     }
 
   // left_foot_ft_ = DyrosMath::lowPassFilter<6>(left_foot_ft, left_foot_ft_, 1.0 / 200, 0.05);
