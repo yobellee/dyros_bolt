@@ -4,7 +4,7 @@ volatile bool *prog_shutdown;
 
 void SIGINT_handler(int sig)
 {
-    cout << " CNTRL : shutdown Signal" << endl;
+    std::cout << " CNTRL : shutdown Signal" << std::endl;
     *prog_shutdown = true;
 }
 

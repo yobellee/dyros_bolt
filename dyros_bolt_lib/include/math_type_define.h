@@ -30,6 +30,8 @@
 
 #define INERITA_SIZE 198
 
+using namespace Eigen;
+
 namespace Eigen
 {
 // Eigen default type definition

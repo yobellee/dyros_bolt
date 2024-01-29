@@ -7,8 +7,8 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <rbdl/rbdl.h>
-// #include <rbdl/addons/urdfreader/urdfreader.h>
-#include <libdwbc/dwbc.h>
+#include <rbdl/addons/urdfreader/urdfreader.h>
+// #include <libdwbc/dwbc.h>
 #include "math_type_define.h"
 
 
