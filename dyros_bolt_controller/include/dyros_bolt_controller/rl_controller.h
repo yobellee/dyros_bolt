@@ -15,8 +15,8 @@ public:
     RLController(const VectorQd& current_q, const VectorQd &current_q_dot, const double hz, const double& control_time) :
         current_q_(current_q), current_q_dot_(current_q_dot), hz_(hz), current_time_(control_time)
     {
-        std::string desc_package_path = ros::package::getPath("dyros_bolt_controller");
-        std::string jitPtFilePath = desc_package_path + "/policy/policy_1.pt";
+        // std::string desc_package_path = ros::package::getPath("dyros_bolt_controller");
+        std::string jitPtFilePath = "/policy/policy_1.pt";
         try {
             module = torch::jit::load(jitPtFilePath);
         }

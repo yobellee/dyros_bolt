@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 3.0.2)
+list(APPEND CMAKE_PREFIX_PATH "/home/yong/Downloads/libtorch")
+
 project(dyros_bolt_controller)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -g)
+add_compile_options(-std=c++14)
+# add_compile_options(-std=c++11 -g)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+find_package(Torch REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   realtime_tools
@@ -23,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(dwbc REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system thread)
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -115,7 +120,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES dyros_bolt_controller
+  LIBRARIES dyros_bolt_controller
   CATKIN_DEPENDS actionlib realtime_tools eigen_conversions geometry_msgs roscpp roslib sensor_msgs std_msgs  mujoco_ros_msgs dyros_bolt_lib
 #  DEPENDS system_lib
 )
@@ -128,6 +133,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
+  # ${TORCH_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
@@ -144,6 +150,7 @@ file(GLOB CONTROLLER_SRC
     "src/joint_controller.cpp"
     "src/custom_controller.cpp"
     "src/odrive_socketcan.cpp"
+    "src/rl_controller.cpp"
     )
 
 ## Declare a C++ library
@@ -181,14 +188,15 @@ add_executable(${PROJECT_NAME} src/dyros_bolt_controller.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(dyros_bolt_controller_lib
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
+  ${TORCH_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
 
-    -L/usr/local/lib
-    -lrbdl
-    -lrbdl_urdfreader
+  -L/usr/local/lib
+  -lrbdl
+  -lrbdl_urdfreader
 
-    # -lqpOASES
+  # -lqpOASES
 )
 target_link_libraries(dyros_bolt_controller
   dyros_bolt_controller_lib
