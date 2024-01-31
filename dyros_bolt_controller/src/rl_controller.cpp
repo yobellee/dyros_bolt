@@ -52,8 +52,8 @@ void RLController::observationAllocation(VectorQd current_q, VectorQd current_q_
 
     for(int i=0; i<3; i++)
     {
-        dof_pos_[i] = current_q[i];
-        dof_pos_[i+3] = current_q[i+4];
+        dof_pos_[i] = current_q[i]-init_q_[i];
+        dof_pos_[i+3] = current_q[i+4]-init_q_[i+3];
         dof_vel_[i] = current_q_dot[i]*0.05;
         dof_vel_[i+3] = current_q_dot[i+4]*0.05;
         action_[i] = this->desired_torque_[i];
