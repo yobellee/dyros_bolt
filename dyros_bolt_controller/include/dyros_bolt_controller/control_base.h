@@ -41,7 +41,7 @@
 #include "dyros_bolt_controller/controller.h"
 #include "dyros_bolt_controller/joint_controller.h"
 #include "dyros_bolt_controller/custom_controller.h"
-#include "dyros_bolt_controller/rl_controller.h"
+// #include "dyros_bolt_controller/rl_controller.h"
 #include "dyros_bolt_controller/dyros_bolt_model.h"
 #include "shm_msgs.h"
 
@@ -101,7 +101,7 @@ private:
     void customCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr& msg);
     void shutdownCommandCallback(const std_msgs::StringConstPtr& msg);
     void jointControlActionCallback(const dyros_bolt_msgs::JointControlGoalConstPtr &goal);   
-    void rlCommandCallback(const std_msgs::BoolConstPtr& msg); 
+    // void rlCommandCallback(const std_msgs::BoolConstPtr& msg); 
 
 protected:
     realtime_tools::RealtimePublisher<dyros_bolt_msgs::JointState> joint_state_pub_; 
@@ -153,7 +153,7 @@ protected:
     DyrosBoltModel model_;
     JointController joint_controller_;
     CustomController custom_controller_;
-    RLController rl_controller_;
+    // RLController rl_controller_;
 
 };
 

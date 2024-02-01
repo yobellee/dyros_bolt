@@ -131,6 +131,7 @@ namespace odrive {
             
 
             void setControllerModes(int axis_can_id_, ODriveControlMode control_mode, ODriveInputMode input_mode);
+            void setControllerGain(int axis_can_id_, ODriveCommandId gain_mode, double gain);
 
             uint32_t createCanId(int axis_can_id, int command);
             float bytesToFloat(const unsigned char* data);

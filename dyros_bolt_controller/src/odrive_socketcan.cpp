@@ -47,6 +47,9 @@ namespace odrive {
             for(int i = 0; i < axis_can_ids_list.size(); i++)
             {
                 setControllerModes(axis_can_ids_list[i], POSITION_CONTROL, PASSTHROUGH);
+                // 30 0.05
+                setControllerGain(axis_can_ids_list[i], SET_POSITION_GAIN, 10);
+                setControllerGain(axis_can_ids_list[i], SET_VEL_GAINS, 0.05);
             }
         }
         else{
@@ -158,12 +161,33 @@ namespace odrive {
         }
     }
 
+    void ODriveSocketCan::setControllerGain(int axis_can_id_, ODriveCommandId gain_mode, double gain) {
+        struct can_frame frame;
+        frame.can_id = createCanId(axis_can_id_, gain_mode);
+        frame.can_dlc = 8;    // Data length code (number of data bytes)
+
+        // Data to be sent
+        if (gain < -3.40282347e+38 || gain > 3.40282347e+38) {
+            std::cerr << "Double value is out of range for 4-byte CAN data." << std::endl;
+            exit(1);
+        }
+        float gain_f_ = static_cast<float>(gain);
+        std::memcpy(frame.data, &gain_f_, sizeof(gain_f_));
+
+        // Send the CAN frame
+        if (write(socketcan, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
+            perror("write");
+            close(socketcan);
+            throw std::runtime_error("Failed to sent CAN frame");
+        }
+    }
+
     void ODriveSocketCan::setInputPosition(int axis_can_id_, double position) {
         if (position < -3.40282347e+38 || position > 3.40282347e+38) {
             std::cerr << "Double value is out of range for 4-byte CAN data." << std::endl;
             exit(1);
         }
-        float pos_f_ = static_cast<float>(position/M_PI);
+        float pos_f_ = static_cast<float>(position * 4.5/M_PI);
 
         struct can_frame frame;
         frame.can_id = createCanId(axis_can_id_, ODriveCommandId::SET_INPUT_POS);

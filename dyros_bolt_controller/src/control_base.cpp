@@ -7,7 +7,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   is_first_boot_(true), Hz_(Hz), control_mask_{}, total_dof_(DyrosBoltModel::HW_TOTAL_DOF),shutdown_flag_(false),
   joint_controller_(q_, q_dot_filtered_, control_time_),
   custom_controller_(model_, q_, q_dot_filtered_, Hz, control_time_),
-  rl_controller_(q_, q_dot_filtered_, mujoco_virtual_dot_, base_quat_, Hz, control_time_),
+  // rl_controller_(q_, q_dot_filtered_, mujoco_virtual_dot_, base_quat_, Hz, control_time_),
   joint_control_as_(nh, "/dyros_bolt/joint_control", false)
 {
   makeIDInverseList();
@@ -44,7 +44,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
 
   joint_command_sub_ = nh.subscribe("/dyros_bolt/joint_command", 3, &ControlBase::jointCommandCallback, this);
   custom_command_sub_ = nh.subscribe("/dyros_bolt/custom_command",3, &ControlBase::customCommandCallback,this);
-  rl_command_sub_ = nh.subscribe("/dyros_bolt/rl_command",3, &ControlBase::rlCommandCallback,this);
+  // rl_command_sub_ = nh.subscribe("/dyros_bolt/rl_command",3, &ControlBase::rlCommandCallback,this);
   shutdown_command_sub_ = nh.subscribe("/dyros_bolt/shutdown_command", 1, &ControlBase::shutdownCommandCallback,this);
   parameterInitialize();
   model_.test();
@@ -122,15 +122,15 @@ void ControlBase::compute()
 
   joint_controller_.compute();
   custom_controller_.compute();
-  rl_controller_.compute();
+  // rl_controller_.compute();
 
   joint_controller_.updateControlMask(control_mask_);
   custom_controller_.updateControlMask(control_mask_);
-  rl_controller_.updateControlMask(control_mask_);
+  // rl_controller_.updateControlMask(control_mask_);
 
   joint_controller_.writeDesired(control_mask_, desired_q_);
   custom_controller_.writeDesired(control_mask_, desired_q_);
-  rl_controller_.writeDesired(control_mask_, desired_q_);
+  // rl_controller_.writeDesired(control_mask_, desired_q_);
 
   // Torque Control
   for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)
@@ -235,10 +235,10 @@ void ControlBase::customCommandCallback(const dyros_bolt_msgs::CustomCommandCons
   }
 }
 
-void ControlBase::rlCommandCallback(const std_msgs::BoolConstPtr& msg)
-{
-  rl_controller_.setEnable(msg->data);
-}
+// void ControlBase::rlCommandCallback(const std_msgs::BoolConstPtr& msg)
+// {
+//   rl_controller_.setEnable(msg->data);
+// }
 
 void ControlBase::shutdownCommandCallback(const std_msgs::StringConstPtr &msg)
 {
