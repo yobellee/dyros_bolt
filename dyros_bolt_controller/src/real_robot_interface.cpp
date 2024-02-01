@@ -15,6 +15,9 @@ RealRobotInterface::RealRobotInterface(ros::NodeHandle &nh, double Hz):
   ControlBase(nh, Hz), rate_(Hz), odrv(nh)
 {
     ROS_INFO("ODrive starting up");
+
+    nh.param<std::string>("ctrl_mode", ctrl_mode, "torque");
+
     axis_request_state_sub = nh.subscribe<std_msgs::Int16>("/odrv_axis_request_states", 1, &RealRobotInterface::axisRequestStateCallback, this);
     axis_current_state_pub = nh.advertise<std_msgs::Int16MultiArray>("/odrv_axis_current_states", 1);
 
@@ -115,16 +118,25 @@ void RealRobotInterface::update()
 void RealRobotInterface::writeDevice()
 {
     if(areMotorsReady()){
-        for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
-        {
-            // if(i == 0)
-            // {
-            //     odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]) );
-            //     // odrv.setInputTorque(i+4, 0.0);
-            // }
-            // std::cout << desired_torque_(i)/k_tau[i] << std::endl;
-            odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]));
-            odrv.setInputTorque(i+3, double(desired_torque_(i+4)/k_tau[i+3]));
+        if (ctrl_mode == "torque"){
+            for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
+            {
+                // if(i == 0)
+                // {
+                //     odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]) );
+                //     // odrv.setInputTorque(i+4, 0.0);
+                // }
+                // std::cout << desired_torque_(i)/k_tau[i] << std::endl;
+                odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]));
+                odrv.setInputTorque(i+3, double(desired_torque_(i+4)/k_tau[i+3]));
+            }
+        }
+        else if (ctrl_mode == "position"){
+            for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
+            {
+                odrv.setInputPosition(i, double(desired_q_(i)));
+                odrv.setInputPosition(i+3, double(desired_q_(i+4)));
+            }
         }
     }
 }

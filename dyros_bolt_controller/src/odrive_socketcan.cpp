@@ -6,6 +6,8 @@ namespace odrive {
         node(nh)
     {
         node.getParam("axis_can_ids", axis_can_ids_list);
+        nh.param<std::string>("ctrl_mode", ctrl_mode, "torque");
+
         const char* ifname = "can0"; // Replace with your CAN interface name
         struct sockaddr_can addr;
         struct ifreq ifr;
@@ -32,12 +34,26 @@ namespace odrive {
             perror("bind");
             close(socketcan);
             throw std::runtime_error("Failed to bind socket");
-        }    
-        
-        for(int i = 0; i < axis_can_ids_list.size(); i++)
-        {
-            setControllerModes(axis_can_ids_list[i], TORQUE_CONTROL, PASSTHROUGH);
         }
+
+        // Set Odrive Control Mode
+        if (ctrl_mode == "torque"){
+            for(int i = 0; i < axis_can_ids_list.size(); i++)
+            {
+                setControllerModes(axis_can_ids_list[i], TORQUE_CONTROL, PASSTHROUGH);
+            }
+        }
+        else if (ctrl_mode == "position"){
+            for(int i = 0; i < axis_can_ids_list.size(); i++)
+            {
+                setControllerModes(axis_can_ids_list[i], POSITION_CONTROL, PASSTHROUGH);
+            }
+        }
+        else{
+            std::cerr << "Invalid control mode. Please choose from 'torque', 'position'." << std::endl;
+            exit(1);
+        }
+
         std::thread canRecieveThread(&ODriveSocketCan::canReceiveMessages,this);
         canRecieveThread.detach();
     }
@@ -64,8 +80,6 @@ namespace odrive {
                 case ODriveCommandId::GET_IQ:
                     axis_current[static_cast<int>(can_axis_id_)] = double(bytesToFloat(recv_frame.data + 4));
                 }
-
-                    
             }
         }
     }

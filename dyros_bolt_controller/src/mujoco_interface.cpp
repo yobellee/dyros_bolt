@@ -36,230 +36,230 @@ mujoco_interface::mujoco_interface(ros::NodeHandle &nh, double Hz):
 
 void mujoco_interface::simready()
 {
-  ros::Rate poll_rate(100);
-  while(!mujoco_ready &&ros::ok())
-  {
-    ros::spinOnce();
-    poll_rate.sleep();
-  }
-  mujoco_ready=false;
+    ros::Rate poll_rate(100);
+    while(!mujoco_ready &&ros::ok())
+    {
+        ros::spinOnce();
+        poll_rate.sleep();
+    }
+    mujoco_ready=false;
 }
 
 void mujoco_interface::simTimeCallback(const std_msgs::Float32ConstPtr &msg)
 {
-  mujoco_sim_time = msg->data;
-  //ControlBase::syncSimControlTime(mujoco_sim_time);
+    mujoco_sim_time = msg->data;
+    //ControlBase::syncSimControlTime(mujoco_sim_time);
 }
 
 void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr &msg)
 {
-  for(int i=0;i<total_dof_;i++)
-  {
-    for(int j=0; j<msg->name.size();j++){
-      if(DyrosBoltModel::JOINT_NAME[i] == msg->name[j].data())
-      {
-        q_(i) = msg->position[j];
-        // std::cout << DyrosBoltModel::JOINT_NAME[i] << ": " << q_(i) << std::endl;
-        // q_virtual_(i+6) = msg->position[j];
-        q_dot_(i) = msg->velocity[j];
-        // q_dot_virtual_(i+6) = msg->velocity[j];
-        torque_(i) = msg->effort[j];
-      }
-    }
-    joint_name_mj[i] = msg->name[i+6].data();
-  }
-  //virtual joint
-  for(int i=0;i<6;i++){
-    mujoco_virtual_(i) = msg->position[i];
-    mujoco_virtual_dot_(i) = msg->velocity[i];
-  //  q_ext_(i) = msg->position[i];
-  //  q_ext_(i+6) = msg->position[i+6];
-  }
-
-  if(mujoco_init_receive == false)
-  {
     for(int i=0;i<total_dof_;i++)
     {
-      desired_q_(i)=q_(i);
+        for(int j=0; j<msg->name.size();j++){
+            if(DyrosBoltModel::JOINT_NAME[i] == msg->name[j].data())
+            {
+                q_(i) = msg->position[j];
+                // std::cout << DyrosBoltModel::JOINT_NAME[i] << ": " << q_(i) << std::endl;
+                // q_virtual_(i+6) = msg->position[j];
+                q_dot_(i) = msg->velocity[j];
+                // q_dot_virtual_(i+6) = msg->velocity[j];
+                torque_(i) = msg->effort[j];
+            }
+        }
+        joint_name_mj[i] = msg->name[i+6].data();
     }
-    mujoco_init_receive = true;
-  }
+    //virtual joint
+    for(int i=0;i<6;i++){
+        mujoco_virtual_(i) = msg->position[i];
+        mujoco_virtual_dot_(i) = msg->velocity[i];
+    //  q_ext_(i) = msg->position[i];
+    //  q_ext_(i+6) = msg->position[i+6];
+    }
+
+    if(mujoco_init_receive == false)
+    {
+        for(int i=0;i<total_dof_;i++)
+        {
+            desired_q_(i)=q_(i);
+        }
+        mujoco_init_receive = true;
+    }
 }
 
 void mujoco_interface::sensorStateCallback(const mujoco_ros_msgs::SensorStateConstPtr &msg)
 {
-  Eigen::Vector6d left_foot_ft, right_foot_ft;
-    for(int i=0;i<msg->sensor.size();i++){
-        // if(msg->sensor[i].name=="L_Force"){
-        //     for(int j=0;j<3;j++){
-        //         left_foot_ft(j) = msg->sensor[i].data[j];
-        //     }
+    Eigen::Vector6d left_foot_ft, right_foot_ft;
+        for(int i=0;i<msg->sensor.size();i++){
+            // if(msg->sensor[i].name=="L_Force"){
+            //     for(int j=0;j<3;j++){
+            //         left_foot_ft(j) = msg->sensor[i].data[j];
+            //     }
 
-        // }
-        // if(msg->sensor[i].name=="R_Force"){
-        //     for(int j=0;j<3;j++){
-        //         right_foot_ft(j) = msg->sensor[i].data[j];
-        //     }
+            // }
+            // if(msg->sensor[i].name=="R_Force"){
+            //     for(int j=0;j<3;j++){
+            //         right_foot_ft(j) = msg->sensor[i].data[j];
+            //     }
 
-        // }
-        // if(msg->sensor[i].name=="L_Torque"){
-        //     for(int j=0;j<3;j++){
-        //         left_foot_ft(j+3) = msg->sensor[i].data[j];
-        //     }
+            // }
+            // if(msg->sensor[i].name=="L_Torque"){
+            //     for(int j=0;j<3;j++){
+            //         left_foot_ft(j+3) = msg->sensor[i].data[j];
+            //     }
 
-        // }
-        // if(msg->sensor[i].name=="R_Torque"){
-        //     for(int j=0;j<3;j++){
-        //         right_foot_ft(j+3) = msg->sensor[i].data[j];
-        //     }
+            // }
+            // if(msg->sensor[i].name=="R_Torque"){
+            //     for(int j=0;j<3;j++){
+            //         right_foot_ft(j+3) = msg->sensor[i].data[j];
+            //     }
 
-        // }
-        if(msg->sensor[i].name=="Acc_Pelvis_IMU"){
-            for(int j=0;j<3;j++){
-                accelometer_(j) = msg->sensor[i].data[j];
+            // }
+            if(msg->sensor[i].name=="Acc_Pelvis_IMU"){
+                for(int j=0;j<3;j++){
+                    accelometer_(j) = msg->sensor[i].data[j];
+                }
+
+            }
+            if(msg->sensor[i].name=="Gyro_Pelvis_IMU"){
+                for(int j=0;j<3;j++){
+                    gyro_(j) = msg->sensor[i].data[j];
+                }
+
+            }
+            if(msg->sensor[i].name=="Magnet_Pelvis_IMU"){
+                for(int j=0;j<3;j++){
+                //    right_foot_ft(j+3) = msg->sensor[i].data[j];
+                }
+
+            }
+            if(msg->sensor[i].name=="Pelvis_quat"){
+                base_quat_.x() = msg->sensor[i].data[0];
+                base_quat_.y() = msg->sensor[i].data[1];
+                base_quat_.z() = msg->sensor[i].data[2];
+                base_quat_.w() = msg->sensor[i].data[3];
             }
 
-        }
-        if(msg->sensor[i].name=="Gyro_Pelvis_IMU"){
-            for(int j=0;j<3;j++){
-                gyro_(j) = msg->sensor[i].data[j];
-            }
-
-        }
-        if(msg->sensor[i].name=="Magnet_Pelvis_IMU"){
-            for(int j=0;j<3;j++){
-            //    right_foot_ft(j+3) = msg->sensor[i].data[j];
-            }
-
-        }
-        if(msg->sensor[i].name=="Pelvis_quat"){
-            base_quat_.x() = msg->sensor[i].data[0];
-            base_quat_.y() = msg->sensor[i].data[1];
-            base_quat_.z() = msg->sensor[i].data[2];
-            base_quat_.w() = msg->sensor[i].data[3];
+            // if(msg->sensor[i].name=="Pelvis_linear_vel"){
+            //     for(int j=0;j<3;j++){
+            //         mujoco_virtual_(j) = msg->sensor[i].data[j];
+            //     }
+            // }
+            // if(msg->sensor[i].name=="Pelvis_angular_vel"){
+            //     for(int j=0;j<3;j++){
+            //         mujoco_virtual_(j+3) = msg->sensor[i].data[j];
+            //     }
+            // }
         }
 
-        // if(msg->sensor[i].name=="Pelvis_linear_vel"){
-        //     for(int j=0;j<3;j++){
-        //         mujoco_virtual_(j) = msg->sensor[i].data[j];
-        //     }
-        // }
-        // if(msg->sensor[i].name=="Pelvis_angular_vel"){
-        //     for(int j=0;j<3;j++){
-        //         mujoco_virtual_(j+3) = msg->sensor[i].data[j];
-        //     }
-        // }
-    }
-
-  // left_foot_ft_ = DyrosMath::lowPassFilter<6>(left_foot_ft, left_foot_ft_, 1.0 / 200, 0.05);
-  // right_foot_ft_ = DyrosMath::lowPassFilter<6>(right_foot_ft, right_foot_ft_, 1.0 / 200, 0.05);
+    // left_foot_ft_ = DyrosMath::lowPassFilter<6>(left_foot_ft, left_foot_ft_, 1.0 / 200, 0.05);
+    // right_foot_ft_ = DyrosMath::lowPassFilter<6>(right_foot_ft, right_foot_ft_, 1.0 / 200, 0.05);
 }
 
 void mujoco_interface::simCommandCallback(const std_msgs::StringConstPtr &msg)
 {
 
-  std::string buf;
-  buf = msg->data;
+    std::string buf;
+    buf = msg->data;
 
 
-  ROS_INFO("CB from simulator : %s", buf.c_str());
-  if(buf == "RESET"){
-    parameterInitialize();
-    mujoco_sim_last_time = 0.0;
+    ROS_INFO("CB from simulator : %s", buf.c_str());
+    if(buf == "RESET"){
+        parameterInitialize();
+        mujoco_sim_last_time = 0.0;
 
-    mujoco_ready=true;
+        mujoco_ready=true;
 
-    std_msgs::String rst_msg_;
-    rst_msg_.data="RESET";
-    mujoco_sim_command_pub_.publish(rst_msg_);
+        std_msgs::String rst_msg_;
+        rst_msg_.data="RESET";
+        mujoco_sim_command_pub_.publish(rst_msg_);
 
-    ros::Rate poll_rate(100);
-    while(!mujoco_init_receive &&ros::ok()){
-      ros::spinOnce();
-      poll_rate.sleep();
+        ros::Rate poll_rate(100);
+        while(!mujoco_init_receive &&ros::ok()){
+            ros::spinOnce();
+            poll_rate.sleep();
+        }
+        mujoco_init_receive=false;
     }
-    mujoco_init_receive=false;
-  }
 
 
-  if(buf=="INIT"){
-    mujoco_init_receive =true;
-    std_msgs::String rst_msg_;
-    rst_msg_.data="INIT";
-    mujoco_sim_command_pub_.publish(rst_msg_);
-  }
+    if(buf=="INIT"){
+        mujoco_init_receive =true;
+        std_msgs::String rst_msg_;
+        rst_msg_.data="INIT";
+        mujoco_sim_command_pub_.publish(rst_msg_);
+    }
 
 }
 
 void mujoco_interface::update()
 {
-  ControlBase::update();
-  ControlBase::model_.updateMujCom(mujoco_virtual_);
-  ControlBase::model_.updateMujComDot(mujoco_virtual_dot_);
+    ControlBase::update();
+    ControlBase::model_.updateMujCom(mujoco_virtual_);
+    ControlBase::model_.updateMujComDot(mujoco_virtual_dot_);
 }
 
 void mujoco_interface::compute()
 {
-  ControlBase::compute();
-  // std::cout << desired_q_ << std::endl;
+    ControlBase::compute();
+    // std::cout << desired_q_ << std::endl;
 }
 
 void mujoco_interface::writeDevice()
 {
-  if (ctrl_mode == "position")
-  {
-    mujoco_joint_set_msg_.MODE = 0;
-
-    if(mujoco_init_receive == true)
+    if (ctrl_mode == "position")
     {
-      for(int i=0;i<total_dof_;i++)
-      {
-        mujoco_joint_set_msg_.position[i] = desired_q_(i);
-      }
-      mujoco_joint_set_msg_.header.stamp = ros::Time::now();
-      mujoco_joint_set_msg_.time = mujoco_sim_time;
-      // mujoco_joint_set_msg_.time = ControlBase::currentTime();
-      mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
-      mujoco_sim_last_time = mujoco_sim_time;
-    }
-  }
-  else if (ctrl_mode == "torque")
-  {
-    mujoco_joint_set_msg_.MODE = 1;
+        mujoco_joint_set_msg_.MODE = 0;
 
-    if(mujoco_init_receive == true)
-    {
-      for(int i=0;i<total_dof_;i++)
-      {
-        // mujoco_joint_set_msg_.torque[i] = model_.command_Torque(i);
-        mujoco_joint_set_msg_.torque[i] = desired_torque_(i);
-        // mujoco_joint_set_msg_.torque[i] = 0;
-        // std::cout << "desired torq: " <<desired_torque_(i) << std::endl;
-      }
-      mujoco_joint_set_msg_.header.stamp = ros::Time::now();
-      mujoco_joint_set_msg_.time = mujoco_sim_time;
-      // mujoco_joint_set_msg_.time = ControlBase::currentTime();
-      mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
-      mujoco_sim_last_time = mujoco_sim_time;
+        if(mujoco_init_receive == true)
+        {
+            for(int i=0;i<total_dof_;i++)
+            {
+              mujoco_joint_set_msg_.position[i] = desired_q_(i);
+            }
+            mujoco_joint_set_msg_.header.stamp = ros::Time::now();
+            mujoco_joint_set_msg_.time = mujoco_sim_time;
+            // mujoco_joint_set_msg_.time = ControlBase::currentTime();
+            mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
+            mujoco_sim_last_time = mujoco_sim_time;
+        }
     }
-  }
+    else if (ctrl_mode == "torque")
+    {
+        mujoco_joint_set_msg_.MODE = 1;
+
+        if(mujoco_init_receive == true)
+        {
+            for(int i=0;i<total_dof_;i++)
+            {
+              // mujoco_joint_set_msg_.torque[i] = model_.command_Torque(i);
+              mujoco_joint_set_msg_.torque[i] = desired_torque_(i);
+              // mujoco_joint_set_msg_.torque[i] = 0;
+              // std::cout << "desired torq: " <<desired_torque_(i) << std::endl;
+            }
+            mujoco_joint_set_msg_.header.stamp = ros::Time::now();
+            mujoco_joint_set_msg_.time = mujoco_sim_time;
+            // mujoco_joint_set_msg_.time = ControlBase::currentTime();
+            mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
+            mujoco_sim_last_time = mujoco_sim_time;
+        }
+    }
 }
 
 void mujoco_interface::wait()
 {
-  bool test_b = false;
+    bool test_b = false;
 
-  ros::Rate poll_rate(20000);
-  int n = 0;
+    ros::Rate poll_rate(20000);
+    int n = 0;
 
-  ROS_INFO_COND(test_b, " wait loop enter");
-  while ((mujoco_sim_time < (mujoco_sim_last_time + 1.0 / dyn_hz)) && ros::ok())
-  {
-      ros::spinOnce();
-      poll_rate.sleep();
-      n++;
-  }
-  ROS_INFO_COND(test_b, " wait loop exit with n = %d", n);
+    ROS_INFO_COND(test_b, " wait loop enter");
+    while ((mujoco_sim_time < (mujoco_sim_last_time + 1.0 / dyn_hz)) && ros::ok())
+    {
+        ros::spinOnce();
+        poll_rate.sleep();
+        n++;
+    }
+    ROS_INFO_COND(test_b, " wait loop exit with n = %d", n);
 
     while((mujoco_sim_time<(mujoco_sim_last_time+1.0/dyn_hz))&&ros::ok()){
         ros::spinOnce();

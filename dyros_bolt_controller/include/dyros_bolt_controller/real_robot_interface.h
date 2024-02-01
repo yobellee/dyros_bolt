@@ -22,6 +22,8 @@ public:
     SHMmsgs *tc_shm_;
     int shm_id_;
 
+    std::string ctrl_mode;
+
     RealRobotInterface(ros::NodeHandle &nh, double Hz);
     virtual ~RealRobotInterface() { deleteSharedMemory(shm_id_, tc_shm_); }
 

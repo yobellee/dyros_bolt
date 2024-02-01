@@ -107,6 +107,7 @@ namespace odrive {
             void resetEncoder(int axis_can_id_, ODriveCommandId cmd);
             void setAxisRequestedState(int axis_can_id_, ODriveAxisState state);
             
+            std::string ctrl_mode;
             std::string axis_name_;
             std::vector<int> axis_can_ids_list;
             

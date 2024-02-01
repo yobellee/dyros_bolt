@@ -138,7 +138,7 @@ void ControlBase::compute()
     // desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]);
     // desired_torque_[i] = desired_q_(i);
     desired_torque_[i] = model_.command_Torque(i);
-    std::cout << "desired_torque_[i] : " << desired_q_.transpose() << std::endl;
+    // std::cout << "desired_torque_[i] : " << desired_q_.transpose() << std::endl;
   }
 
   tick_ ++;
