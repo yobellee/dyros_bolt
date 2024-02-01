@@ -107,7 +107,7 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
     // std::cout << G_.block<MODEL_DOF,1>(6,0).transpose() << std::endl;
     // std::cout << B_.block<MODEL_DOF,1>(6,0).transpose() << std::endl;
 
-    command_Torque = B_.block<MODEL_DOF,1>(6,0);
+    command_Torque = G_.block<MODEL_DOF,1>(6,0);
     // command_Torque.setZero(MODEL_DOF);
 
     // getInertiaMatrixDoF(&full_inertia_mat_);

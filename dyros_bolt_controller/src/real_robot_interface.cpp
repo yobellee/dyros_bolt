@@ -76,11 +76,12 @@ void RealRobotInterface::readDevice()
     for (int i = 0; i < 3; i++)
     {
         q_(i) = -odrv.axis_angle[i];
-        q_dot_(i) = -odrv.axis_velocity[i];
+        q_dot_(i) = odrv.axis_velocity[i];
 
         q_(i+4) = odrv.axis_angle[i+3];
         q_dot_(i+4) = odrv.axis_velocity[i+3];
     }
+    q_(4) = -q_(4);
     q_[3] = 0;
     q_[7] = 0;
     q_dot_[3] =0;
@@ -121,20 +122,18 @@ void RealRobotInterface::writeDevice()
         if (ctrl_mode == "torque"){
             for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
             {
-                // if(i == 0)
-                // {
-                //     odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]) );
-                //     // odrv.setInputTorque(i+4, 0.0);
-                // }
+
                 // std::cout << desired_torque_(i)/k_tau[i] << std::endl;
-                odrv.setInputTorque(i, double(desired_torque_(i)/k_tau[i]));
+                odrv.setInputTorque(i, double(-desired_torque_(i)/k_tau[i]));
                 odrv.setInputTorque(i+3, double(desired_torque_(i+4)/k_tau[i+3]));
+                if(i == 0)
+                    odrv.setInputTorque(i+4, double(-desired_torque_(i)/k_tau[i]) );
             }
         }
         else if (ctrl_mode == "position"){
             for(int i=0; i< DyrosBoltModel::HW_TOTAL_DOF / 2 - 1; i++)
             {
-                odrv.setInputPosition(i, double(-desired_q_(i)));
+                odrv.setInputPosition(i, double(desired_q_(i)));
                 odrv.setInputPosition(i+3, double(desired_q_(i+4)));
             }
         }
