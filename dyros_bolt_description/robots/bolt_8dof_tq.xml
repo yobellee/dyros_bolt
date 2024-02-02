@@ -1,5 +1,6 @@
 <mujoco model="bolt">
     <include file="simulation_scene.xml"/>
+	<!-- <option gravity= "0 0 0"/> -->
 
     <asset>
         <mesh name="bolt_body" file="bolt_body.stl" />
@@ -102,12 +103,13 @@
     </sensor>
 
     <keyframe>
-        <key name="front" time="0" qpos="0 0 0.43 1 0 0 0
+        <key name="front" time="0" qpos="0 0 0.5 1 0 0 0
 
-                                        0 0.436332313 -0.872664626 0.436332313
-                                        0 0.436332313 -0.872664626 0.436332313"/>
+                                        0 0.1 -0.25 0
+                                        0 0.1 -0.25 0"/>
     </keyframe>
 </mujoco>
 <!-- 0 0 0 -0.785398163 0 0 0 -0.785398163"/> -->
                                          <!-- 0 0 0 0 0 0 0 0"/> -->
+                                        <!-- 0 0.436332313 -0.872664626 0.436332313 -->
         

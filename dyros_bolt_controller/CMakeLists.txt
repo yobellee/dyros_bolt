@@ -26,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(dwbc REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system thread)
-# find_package(Torch REQUIRED)
+find_package(Torch REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -135,7 +135,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
-  # ${TORCH_INCLUDE_DIRS}
+  ${TORCH_INCLUDE_DIRS}
 )
 file(GLOB_RECURSE HeaderFiles "include/*.h")
 add_custom_target(dyros_bolt_control_headers SOURCES ${HeaderFiles})
@@ -149,7 +149,7 @@ file(GLOB CONTROLLER_SRC
     "src/joint_controller.cpp"
     "src/custom_controller.cpp"
     "src/odrive_socketcan.cpp"
-    # "src/rl_controller.cpp"
+    "src/rl_controller.cpp"
     )
 
 ## Declare a C++ library
@@ -187,7 +187,7 @@ add_executable(${PROJECT_NAME} src/dyros_bolt_controller.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(dyros_bolt_controller_lib
-  # ${TORCH_LIBRARIES}
+  ${TORCH_LIBRARIES}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
 

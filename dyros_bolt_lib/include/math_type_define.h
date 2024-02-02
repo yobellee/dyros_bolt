@@ -109,7 +109,6 @@ namespace DyrosMath
 
   // constexpr double GRAVITY {9.80665};
   // constexpr double DEG2RAD {};
-
   static Eigen::Matrix3d skm(Eigen::Vector3d x)
   {
     Eigen::Matrix3d Skew_temp1(3, 3);

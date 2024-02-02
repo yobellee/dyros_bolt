@@ -34,6 +34,9 @@ public:
             this->desired_torque_[i] = desired_torque__[i];
             this->desired_torque_[i+4] = desired_torque__[i+3];
         }
+        std::cout << "RL Controller is initialized" << std::endl;
+        std::cout << "action torq: " << desired_torque__.transpose()<< std::endl;
+        std::cout << "action torq: " << this->desired_torque_.transpose()<< std::endl;
     }
 
     void setEnable(bool enable);

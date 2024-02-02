@@ -69,9 +69,11 @@ void RLController::observationAllocation(VectorQd current_q, VectorQd current_q_
     torch::Tensor action = torch::from_blob(action_.data(), {1, 6});
 
     std::vector<torch::Tensor> tensor_list = {base_lin_vel, base_ang_vel, projected_gravity, commands, dof_pos, dof_vel, action};
-
+    
     // this->observation = torch::zeros({1, this->observation_size});
     this->observation = torch::cat(tensor_list, 1);
+    std::cout << "observation: " << this->observation << std::endl;
+    std::cout << "observation: " << this->observation.sizes() << std::endl;
 }
 
 void RLController::updateControlMask(unsigned int *mask)
@@ -96,12 +98,11 @@ void RLController::writeDesired(const unsigned int *mask, VectorQd& desired_torq
 {
     if(this->rl_enable_)
     {
-        for (int i=0; i<3; i++)
+        for (int i=0; i<8; i++)
         {
             if(mask[i] & PRIORITY)
             {
                 desired_torque[i] = desired_torque_[i];
-                desired_torque[i+3] = desired_torque_[i+4];
             }
         }
     }
