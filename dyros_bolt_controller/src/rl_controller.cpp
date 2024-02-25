@@ -10,6 +10,8 @@ void RLController::setEnable(bool enable)
 
 void RLController::compute()
 {
+    // std::cout << "mujoco_virtual_[]: " << virtual_q_dot_.transpose() << std::endl;
+    // std::cout << "q_[]: " << current_q_.transpose() << std::endl;
     if(this->rl_enable_)
     {
         observationAllocation(current_q_, current_q_dot_, virtual_q_dot_, base_quat_);
@@ -40,6 +42,7 @@ void RLController::observationAllocation(VectorQd current_q, VectorQd current_q_
     */
 
     Vector3d base_lin_vel_ = virtual_q_dot.head(3)*2.0;
+    // std::cout << "base_lin_vel_: " << virtual_q_dot_.transpose() << std::endl;
     Vector3d base_ang_vel_ = virtual_q_dot.tail(3)*0.25;
     Vector3d projected_gravity_ = quat_rotate_inverse(base_quat, this->gravity);
     Vector2d commands_ = Vector2d(4, 0)*2.0;
@@ -61,9 +64,12 @@ void RLController::observationAllocation(VectorQd current_q, VectorQd current_q_
     }
 
     torch::Tensor base_lin_vel = torch::from_blob(base_lin_vel_.data(), {1, 3});
+    // std::cout << "base_lin_vel: " << base_lin_vel << std::endl;
     torch::Tensor base_ang_vel = torch::from_blob(base_ang_vel_.data(), {1, 3});
     torch::Tensor projected_gravity = torch::from_blob(projected_gravity_.data(), {1, 3});
     torch::Tensor commands = torch::from_blob(commands_.data(), {1, 2});
+    std::cout << "command: " << commands_.data() << std::endl;
+    std::cout << "command0: " << commands << std::endl;
     torch::Tensor dof_pos = torch::from_blob(dof_pos_.data(), {1, 6});
     torch::Tensor dof_vel = torch::from_blob(dof_vel_.data(), {1, 6});
     torch::Tensor action = torch::from_blob(action_.data(), {1, 6});
@@ -72,8 +78,8 @@ void RLController::observationAllocation(VectorQd current_q, VectorQd current_q_
     
     // this->observation = torch::zeros({1, this->observation_size});
     this->observation = torch::cat(tensor_list, 1);
-    std::cout << "observation: " << this->observation << std::endl;
-    std::cout << "observation: " << this->observation.sizes() << std::endl;
+    // std::cout << "observation: " << observation << std::endl;
+    // std::cout << "observation: " << observation.sizes() << std::endl;
 }
 
 void RLController::updateControlMask(unsigned int *mask)

@@ -72,6 +72,7 @@ void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr 
     for(int i=0;i<6;i++){
         mujoco_virtual_(i) = msg->position[i];
         mujoco_virtual_dot_(i) = msg->velocity[i];
+        // std::cout << "mujoco_virtual_[]: " << mujoco_virtual_dot_.transpose() << std::endl;
     //  q_ext_(i) = msg->position[i];
     //  q_ext_(i+6) = msg->position[i+6];
     }

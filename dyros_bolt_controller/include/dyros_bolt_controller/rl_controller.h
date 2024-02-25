@@ -57,7 +57,7 @@ private:
     const VectorQd& current_q_dot_;
     const Vector6d& virtual_q_dot_;
     const Eigen::Quaterniond& base_quat_;
-    Vector3d gravity = Vector3d(0, 0, -9.81);
+    Vector3d gravity = Vector3d(0, 0, -1);
 
     torch::jit::script::Module module;
 

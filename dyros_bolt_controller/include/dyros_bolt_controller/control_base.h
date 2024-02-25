@@ -144,8 +144,8 @@ protected:
     VectorQd desired_torque_; // current desired torque values
     Eigen::Vector12d extencoder_offset_;
 
-    Eigen::Vector6d mujoco_virtual_;
-    Eigen::Vector6d mujoco_virtual_dot_;
+    Eigen::Vector6d mujoco_virtual_ = Eigen::Vector6d::Zero();
+    Eigen::Vector6d mujoco_virtual_dot_ = Eigen::Vector6d::Zero();
 
 
     int total_dof_;
