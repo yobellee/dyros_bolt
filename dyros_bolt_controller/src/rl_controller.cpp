@@ -15,6 +15,7 @@ void RLController::compute()
     if(this->rl_enable_)
     {
         observationAllocation(current_q_, current_q_dot_, virtual_q_dot_, base_quat_);
+        this->observation = this->observation.to(torch::kFloat);
         this->action = module.forward({this->observation}).toTensor();
         this->action = this->action.to(torch::kDouble);
         Eigen::Map<Eigen::VectorXd> desired_torque_(this->action.data<double>(), this->action.numel());
@@ -63,22 +64,19 @@ void RLController::observationAllocation(VectorQd current_q, VectorQd current_q_
         action_[i+3] = this->desired_torque_[i+4];
     }
 
-    torch::Tensor base_lin_vel = torch::from_blob(base_lin_vel_.data(), {1, 3});
-    // std::cout << "base_lin_vel: " << base_lin_vel << std::endl;
-    torch::Tensor base_ang_vel = torch::from_blob(base_ang_vel_.data(), {1, 3});
-    torch::Tensor projected_gravity = torch::from_blob(projected_gravity_.data(), {1, 3});
-    torch::Tensor commands = torch::from_blob(commands_.data(), {1, 2});
-    std::cout << "command: " << commands_.data() << std::endl;
-    std::cout << "command0: " << commands << std::endl;
-    torch::Tensor dof_pos = torch::from_blob(dof_pos_.data(), {1, 6});
-    torch::Tensor dof_vel = torch::from_blob(dof_vel_.data(), {1, 6});
-    torch::Tensor action = torch::from_blob(action_.data(), {1, 6});
+    torch::Tensor base_lin_vel = torch::from_blob(base_lin_vel_.data(), {1, 3}, torch::kDouble);
+    torch::Tensor base_ang_vel = torch::from_blob(base_ang_vel_.data(), {1, 3}, torch::kDouble);
+    torch::Tensor projected_gravity = torch::from_blob(projected_gravity_.data(), {1, 3}, torch::kDouble);
+    torch::Tensor commands = torch::from_blob(commands_.data(), {1, 2}, torch::kDouble);
+    torch::Tensor dof_pos = torch::from_blob(dof_pos_.data(), {1, 6}, torch::kDouble);
+    torch::Tensor dof_vel = torch::from_blob(dof_vel_.data(), {1, 6}, torch::kDouble);
+    torch::Tensor action = torch::from_blob(action_.data(), {1, 6}, torch::kDouble);
 
     std::vector<torch::Tensor> tensor_list = {base_lin_vel, base_ang_vel, projected_gravity, commands, dof_pos, dof_vel, action};
     
     // this->observation = torch::zeros({1, this->observation_size});
     this->observation = torch::cat(tensor_list, 1);
-    // std::cout << "observation: " << observation << std::endl;
+    std::cout << "observation: " << observation << std::endl;
     // std::cout << "observation: " << observation.sizes() << std::endl;
 }
 

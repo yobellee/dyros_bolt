@@ -7,7 +7,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   is_first_boot_(true), Hz_(Hz), control_mask_{}, total_dof_(DyrosBoltModel::HW_TOTAL_DOF),shutdown_flag_(false),
   joint_controller_(q_, q_dot_filtered_, control_time_),
   custom_controller_(model_, q_, q_dot_filtered_, Hz, control_time_),
-  rl_controller_(q_, q_dot_filtered_, mujoco_virtual_dot_, base_quat_, Hz, control_time_),
+  rl_controller_(q_, q_dot_, mujoco_virtual_dot_, base_quat_, Hz, control_time_),
   joint_control_as_(nh, "/dyros_bolt/joint_control", false)
 {
   makeIDInverseList();
