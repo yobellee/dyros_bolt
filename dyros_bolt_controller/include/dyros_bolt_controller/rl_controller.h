@@ -25,10 +25,13 @@ public:
         catch (const c10::Error& e) {
             std::cerr << "error loading the model\n";
         }
-        observation = torch::zeros({1, observation_size});
+        std::cout << "RL Controller is initialized" << std::endl;
+
+        observation = torch::zeros({1, 29});
         action = module.forward({observation}).toTensor();
         action = action.to(torch::kDouble);
-        Eigen::Map<Eigen::VectorXd> desired_torque__(action.data<double>(), action.numel());
+        auto data_ptr = action.data_ptr<double>();
+        Eigen::Map<Eigen::VectorXd> desired_torque__(data_ptr, action.size(0), action.size(1));
         for(int i=0; i<3; i++)
         {
             this->desired_torque_[i] = desired_torque__[i];
@@ -46,7 +49,7 @@ public:
     void updateControlMask(unsigned int *mask);
     void writeDesired(const unsigned int *mask, VectorQd& desired_torque);
 
-    Eigen::Vector3d quat_rotate_inverse(const Eigen::Quaterniond& q, const Eigen::Vector3d& v);
+    Eigen::VectorXf quat_rotate_inverse(const Eigen::Quaterniond& q, const Eigen::Vector3d& v);
 private: 
     const double hz_;
     const double &current_time_; // updated by control_base
