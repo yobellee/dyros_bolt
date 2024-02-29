@@ -105,7 +105,7 @@ void RLController::writeDesired(const unsigned int *mask, VectorQd& desired_torq
     {
         for (int i=0; i<8; i++)
         {
-            if(mask[i] & PRIORITY)
+            if( mask[i] >= PRIORITY && mask[i] < PRIORITY * 2 )
             {
                 desired_torque[i] = desired_torque_[i];
             }

@@ -126,16 +126,17 @@ void ControlBase::compute()
 
   joint_controller_.updateControlMask(control_mask_);
   custom_controller_.updateControlMask(control_mask_);
-  rl_controller_.updateControlMask(control_mask_);
-
+  // rl_controller_.updateControlMask(control_mask_);
+  // std::cout << "control_mask_ : " << control_mask_[0] << control_mask_[1] << control_mask_[2] << control_mask_[3] << std::endl;
   joint_controller_.writeDesired(control_mask_, desired_q_);
   custom_controller_.writeDesired(control_mask_, desired_q_);
-  rl_controller_.writeDesired(control_mask_, desired_torque_);
+  // rl_controller_.writeDesired(control_mask_, desired_torque_);
 
   // Torque Control
+  // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
   for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)
   {
-    // desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]);
+    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]) + model_.command_Torque(i);
     // desired_torque_[i] = desired_q_(i);
     // desired_torque_[i] = model_.command_Torque(i);
     // std::cout << "desired_torque_[i] : " << desired_torque_.transpose() << std::endl;
@@ -228,6 +229,7 @@ void ControlBase::customCommandCallback(const dyros_bolt_msgs::CustomCommandCons
   {
     custom_controller_.setEnable(true);
     custom_controller_.setTarget(msg->first_foot_step, msg->x, msg->y, msg->z, msg->theta, msg->step_length_x, msg->step_length_y);
+    std::cout << "Custom Walking Command Received" << std::endl;
   }
   else
   {

@@ -57,11 +57,11 @@ void CustomController::compute()
 
         if(motion_end_)
         {
-            getComTrajectory();
-            getPelvTrajectory();
-            getFootTrajectory();
-            supportToFloat();
-            // circling_motion();
+            // getComTrajectory();
+            // getPelvTrajectory();
+            // getFootTrajectory();
+            // supportToFloat();
+            circling_motion();
 
             computeIK(pelv_traj_float_, lfoot_traj_float_, rfoot_traj_float_, q_des);
 
@@ -71,7 +71,7 @@ void CustomController::compute()
 
             for(int i=0; i<8; i++)
             { desired_q_(i) = q_des(i); } 
-
+            // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
             updateNextStepTime();
         }
         else

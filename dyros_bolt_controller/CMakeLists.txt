@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
-list(APPEND CMAKE_PREFIX_PATH "/home/yong/Downloads/libtorch")
+list(APPEND CMAKE_PREFIX_PATH "/home/dyrosbolt/Downloads/libtorch")
+# list(APPEND CMAKE_PREFIX_PATH "/home/yong/Downloads/libtorch")
 
 project(dyros_bolt_controller)
 
