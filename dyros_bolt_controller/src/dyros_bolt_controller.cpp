@@ -26,6 +26,7 @@ int main(int argc, char **argv)
     // init_shm(shm_msg_key, shm_id_, &ctr_obj->tc_shm_);
     // prog_shutdown = &ctr_obj->tc_shm_->shutdown;
 
+
     double Hz;
     nh.param<double>("control_frequency", Hz, 150.0); // if can't find control_frequency, Hz is set by the default value=150
 
