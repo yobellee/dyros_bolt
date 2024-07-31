@@ -56,7 +56,6 @@ using namespace std;
 
 class ControlBase
 {
-
 public:
     ControlBase(ros::NodeHandle &nh, double Hz);
     virtual ~ControlBase(){}
@@ -78,6 +77,7 @@ public:
     std::vector<double> pos_kp;
     std::vector<double> pos_kv;
     std::vector<double> k_tau;
+
 
 private:
     void makeIDInverseList();
@@ -117,7 +117,7 @@ protected:
     VectorQd q_; ///< current q
     VectorQd q_dot_; ///< current qdot
     VectorQd q_dot_filtered_; ///< current qdot with filter
-    VectorQd torque_; // current joint toruqe
+    VectorQd torque_; // current joint torque
     Eigen::Vector12d q_ext_;
     Eigen::Vector12d q_ext_dot_;
     Eigen::Vector12d q_ext_offset_;

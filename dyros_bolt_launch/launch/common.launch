@@ -1,6 +1,6 @@
 <launch>
   <arg name="run_mode" />
-  <arg name="ctrl_mode" />
+  <arg name="ctrl_mode" /> <!-- run_mode: real robot이냐, mujoco냐/ ctrl_mode: 토크제어냐, 위치제어냐 -->
   <!-- <node name="dyros_bolt_smach" pkg="dyros_bolt_smach" type="mini_drc_mission_toplevel.py" respawn="false" output="screen"> -->
     <!-- <param name="run_mode" type="string" value="$(arg run_mode)" /> -->
   <!-- </node> -->

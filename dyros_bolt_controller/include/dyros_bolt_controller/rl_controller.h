@@ -38,6 +38,8 @@ public:
             this->desired_torque_[i+4] = desired_torque__[i+3];
         }
         std::cout << "RL Controller is initialized" << std::endl;
+        //testtest
+        //std::cout<<"Yobel testing the value of control_time_: "<<control_time<<std::endl;
         std::cout << "action torq: " << desired_torque__.transpose()<< std::endl;
         std::cout << "action torq: " << this->desired_torque_.transpose()<< std::endl;
     }

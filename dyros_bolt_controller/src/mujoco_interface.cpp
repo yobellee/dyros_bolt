@@ -11,36 +11,58 @@ namespace dyros_bolt_controller {
 mujoco_interface::mujoco_interface(ros::NodeHandle &nh, double Hz):
     ControlBase(nh,Hz), rate_(Hz), dyn_hz(Hz)
 {
-    nh.param<std::string>("ctrl_mode", ctrl_mode, "torque");
+    nh.param<std::string>("ctrl_mode", ctrl_mode, "torque");//this line retrieves a parameter from the ROS parameter server
+    /*
+    "ctrl_mode": The name of parameter being retrieved.
+    'ctrl_mode': local variable that will store the retrieved parameter's value.
+    "torque": Default value of 'ctrl_mode', if the parameter doesn't exist on the server.
+    */
 
     simulation_running_= true;
-    mujoco_joint_set_pub_=nh.advertise<mujoco_ros_msgs::JointSet>("/mujoco_ros_interface/joint_set",100);
-    mujoco_sim_command_pub_=nh.advertise<std_msgs::String>("/mujoco_ros_interface/sim_command_con2sim",100);
-    mujoco_sim_command_sub_=nh.subscribe("/mujoco_ros_interface/sim_command_sim2con",100,&mujoco_interface::simCommandCallback,this);
 
-    mujoco_joint_state_sub_ = nh.subscribe("/mujoco_ros_interface/joint_states",1,&mujoco_interface::jointStateCallback,this,ros::TransportHints().tcpNoDelay(true));
+
+    /* <Setting up a ROS publisher>
+    'mujoco_joint_set_pub_': A ROS publisher member variable that will be used to publish messages
+    mujoco_ros_msgs::JointSet안에는 header, time, mode, position, torque가 있음.
+    "/mujoco_ros_interface/joint_set": Topic name. 다른 노드들이 이 topic을 subscribe해서 Mujoco의 joint set commands를 얻을 수 있으
+    '100': que size    */
+    mujoco_joint_set_pub_=nh.advertise<mujoco_ros_msgs::JointSet>("/mujoco_ros_interface/joint_set",100);    
+    mujoco_sim_command_pub_=nh.advertise<std_msgs::String>("/mujoco_ros_interface/sim_command_con2sim",100);
+
+    /* <Setting up a ROS subscriber>
+    'mujoco_sim_command_sub_': A ROS subscriber member variable
+    "/mujoco_ros_interface/sim_command_sim2con": Topic name
+    '100': que size
+    '&mujoco_interface::simCommandCallback': a pointer to the function 'simCommandCallback', which will be called whenever a new message is received on this topic.
+    'this': mujoco_interface 클래스의 객체를 가리키는 포인터, which to call the callback function: simCommandCallback. --> ensures that 'simCommandCallback' has acces to the mujoco_interface class's member variables and methods.    */
+    mujoco_sim_command_sub_=nh.subscribe("/mujoco_ros_interface/sim_command_sim2con",100,&mujoco_interface::simCommandCallback,this);
+    mujoco_joint_state_sub_ = nh.subscribe("/mujoco_ros_interface/joint_states",1,&mujoco_interface::jointStateCallback,this,ros::TransportHints().tcpNoDelay(true));//reducing latency
     mujoco_sim_time_sub_ = nh.subscribe("/mujoco_ros_interface/sim_time",1,&mujoco_interface::simTimeCallback,this,ros::TransportHints().tcpNoDelay(true));
     mujoco_sensor_state_sub_=nh.subscribe("/mujoco_ros_interface/sensor_states",1,&mujoco_interface::sensorStateCallback,this,ros::TransportHints().tcpNoDelay(true));
 
-    mujoco_joint_set_msg_.position.resize(total_dof_);
-    mujoco_joint_set_msg_.torque.resize(total_dof_);
+    //'mujoco_joint_set_msg_'라는 객체 안에는 header, time, mode, position, torque가 있음. // 'total_dof_'는 ConrolBase 초기화하면서 HW_TOTAL_DOF=8로 초기화.
+    mujoco_joint_set_msg_.position.resize(total_dof_);// position벡터의 요소가 8개
+    mujoco_joint_set_msg_.torque.resize(total_dof_);// torque벡터의 요소가 8개.
 
-    mujoco_sim_time =0.0;
+    mujoco_sim_time =0.0;//"/mujoco_ros_interface/joint_states" 이 topic에 새로운 거 들어오면 update.
+
     ROS_INFO("Waiting for connection with Mujoco Ros interface ");
     simready();
     ROS_INFO("Mujoco Ros interface Connected");
-
     // init_shm(shm_msg_key, shm_id_, &tc_shm_);
     // prog_shutdown = &tc_shm_->shutdown;
 }
 
 void mujoco_interface::simready()
 {
-    ros::Rate poll_rate(100);
+    ros::Rate poll_rate(100);//sets a loop rate of 100Hz: loop runs 100times/sec
     while(!mujoco_ready &&ros::ok())
-    {
-        ros::spinOnce();
-        poll_rate.sleep();
+    {   /*while문 안에 있는 이 두 line의 목적: to synchronize the startup of the
+        controller and the simulation. */
+        //mujoco_ready가 true가 되면 이 loop 탈출
+
+        ros::spinOnce();//to update the 'mujoco_ready' flag based on messages received from the simulation
+        poll_rate.sleep();// 100Hz loop rate 맞추려고
     }
     mujoco_ready=false;
 }
@@ -195,8 +217,8 @@ void mujoco_interface::simCommandCallback(const std_msgs::StringConstPtr &msg)
 void mujoco_interface::update()
 {
     ControlBase::update();
-    ControlBase::model_.updateMujCom(mujoco_virtual_);
-    ControlBase::model_.updateMujComDot(mujoco_virtual_dot_);
+    ControlBase::model_.updateMujCom(mujoco_virtual_);//mujoco_virtual은 6개의 요소로 이루어진 벡터
+    ControlBase::model_.updateMujComDot(mujoco_virtual_dot_);//mujoco_virtual_dot_도 6차원 벡터
 }
 
 void mujoco_interface::compute()

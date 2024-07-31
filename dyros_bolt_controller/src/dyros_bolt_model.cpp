@@ -16,6 +16,14 @@ constexpr const size_t DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF;
 const std::string DyrosBoltModel::JOINT_NAME[DyrosBoltModel::HW_TOTAL_DOF] = {
     "FL_HAA", "FL_HFE", "FL_KFE", "FL_ANKLE",
     "FR_HAA", "FR_HFE", "FR_KFE", "FR_ANKLE"};
+/*
+FL_HAA: Front Left_Hip Abduction/Adduction(다리 조이고 벌리는 거 생각)
+FL_HFE: Front Left_Hip Flexion/Extension(앞차기 뒤차기 할때 움직이는 거 생각)
+FL_KFE: Front Left_Knee Flexion/Extension
+FL_ANKLE: 발목 움직이는 거
+나머지는 오른쪽 발임.
+*/
+
 
 // Dynamixel Hardware IDs
 const int DyrosBoltModel::JOINT_ID[DyrosBoltModel::HW_TOTAL_DOF] = {
@@ -66,7 +74,7 @@ void DyrosBoltModel::test()
     Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1> q_vjoint;
     Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1> qdot_vjoint;
     q_vjoint.setZero();
-    q_vjoint(MODEL_WITH_VIRTUAL_DOF) = 1;
+    q_vjoint(MODEL_WITH_VIRTUAL_DOF) = 1;//vector 첫번째 요소 index=0 -> MODEL_WITH_VIRTUAL_DOF=14이니까, 0~13 요소까지 접근 가능하게 하고, 이걸 넘어가면, outofrange로 처리하게 하려고
     // q_vjoint << 0, 0, 0.43, 0, 0, 0,
                 // 0, 0.436332313, -0.872664626, 0.436332313,
                 // 0, 0.436332313, -0.872664626, 0.436332313;
@@ -94,26 +102,36 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
     // q_virtual_ddot_ = qddot;
 
     RigidBodyDynamics::UpdateKinematicsCustom(model_, &q, &qdot, &qddot);
+    //
 
-    VectorXd G_, B_;
+    VectorXd G_, B_;//14개의 요소 가진 벡터들임. - G_와 B_에 nonlinear effect를 반영.(근데 안 씀 시뮬 상에서 하니까 그런듯)
     G_.setZero(MODEL_WITH_VIRTUAL_DOF);
     B_.setZero(MODEL_WITH_VIRTUAL_DOF);
 
-    RigidBodyDynamics::NonlinearEffects(model_, q, qddot, G_);
-    RigidBodyDynamics::NonlinearEffects(model_, q, qdot, B_);
+    //there's no function for NonlinearEffects -->think the below two lines are trash
+    RigidBodyDynamics::NonlinearEffects(model_, q, qddot, G_);//Purpose: to calculate the dynamic effects on the robot, when it experiences joint accelerations(qddot). --> It helps determine "how much force or torque is required" to counteract these effects to maintain a specific motion or state.
+    RigidBodyDynamics::NonlinearEffects(model_, q, qdot, B_);//Purpose: to compute the effects due to the robot's motion (velocities), capturing Coriolis and centrifugal forces specifically. Then by this information give the compensation
 
     // Gravity + Coriolis
     // std::cout << "GRAVITY"<<std::endl;
     // std::cout << G_.block<MODEL_DOF,1>(6,0).transpose() << std::endl;
     // std::cout << B_.block<MODEL_DOF,1>(6,0).transpose() << std::endl;
 
-    command_Torque = G_.block<MODEL_DOF,1>(6,0);
+
+
+    //'block': Eigen library function that allows you to extract a submatrix or subvector from a larger matrix or vector. 여기선 'Model_DOF=8' By '1' vector 추출 --> 'G_'의 "7번째요소(index=6)~14번째요소(index=13)". 즉 8개 요소를 추출
+    // 앞의 6 element = pelvis coord. info.여서  
+    command_Torque = G_.block<MODEL_DOF,1>(6,0);// 'command_Torque' represents the forces that need to be countered or assisted by the actuators, because of the nonlinear effect. 
+
+
     // command_Torque.setZero(MODEL_DOF);
 
     // getInertiaMatrixDoF(&full_inertia_mat_);
     // getInertiaMatrixlegDoF(&leg_inertia_mat_);
-    getCenterOfMassPosition(&com_);
-    getCenterOfMassPositionDot(&comDot_);
+
+
+    getCenterOfMassPosition(&com_);//calls the 'getCenterOfMassPosition' function with a pointer to the 'com_' variable. It calculates and sets the center of mass of the robot within the member variable 'com_'.
+    getCenterOfMassPositionDot(&comDot_);// calculating and updating the velocity of the center of mass (COM) of the robot.
     for(unsigned int i=0; i<2; i++)
     {
         getTransformEndEffector((EndEffector)i, &current_transform_[i]);
@@ -261,7 +279,10 @@ void DyrosBoltModel::getCenterOfMassPositionDot(Eigen::Vector3d* position_dot)
     double mass;
 
     RigidBodyDynamics::Utils::CalcCenterOfMass(model_, q_virtual_, q_virtual_dot_, &qddot, mass, com, &com_dot, NULL, NULL, NULL, false);
-    *position_dot = com_dot;
+    //Purpose: to compute the center of mass position, total mass, and optionally other related dynamics of the model.
+
+
+    *position_dot = com_dot; 
 }
 
 void DyrosBoltModel::getInertiaMatrixDoF(Eigen::Matrix<double, MODEL_WITH_VIRTUAL_DOF, MODEL_WITH_VIRTUAL_DOF> *inertia)

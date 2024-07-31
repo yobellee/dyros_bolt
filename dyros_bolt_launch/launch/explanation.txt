@@ -1,0 +1,5 @@
+mujoco라 적힌 것들: mujoco simulation 실행할 때 쓰는 launch 파일
+real이라 적힌 것들: 실제 robot 실행 --> 근데 이거 실행 안되게 해놨으
+
+
+--> 일단은 mujoco launch만 알면 된대!

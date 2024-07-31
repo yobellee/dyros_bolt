@@ -122,6 +122,8 @@ namespace DyrosMath
     return Skew_temp1;
   }
 
+//Manipulator Trajecotry에서 배운 Cubic Polynomial임
+//used to generate a smooth trajectory between two states over a specified time interval. Creates a trajectory that smoothly transitions from a starting state to an ending state with specified boundary conditions.
   static double cubic(double time,    ///< Current time
                       double time_0,  ///< Start time
                       double time_f,  ///< End time
@@ -143,12 +145,13 @@ namespace DyrosMath
     }
     else
     {
-      double elapsed_time = time - time_0;
+      double elapsed_time = time - time_0;//elapsed time=t
       double total_time = time_f - time_0;
       double total_time2 = total_time * total_time;  // pow(t,2)
       double total_time3 = total_time2 * total_time; // pow(t,3)
       double total_x = x_f - x_0;
-
+      
+      //This equation uses the cubic polynomial to calculate the desired position (x_t) at the current time (time).
       x_t = x_0 + x_dot_0 * elapsed_time
 
             + (3 * total_x / total_time2 - 2 * x_dot_0 / total_time - x_dot_f / total_time) * elapsed_time * elapsed_time
@@ -159,6 +162,7 @@ namespace DyrosMath
     }
 
     return x_t;
+    //the desired position of a joint at the given time. This value is then used in the control algorithm to update the joint position, ensuring a smooth trajectory that respects the initial and final velocities.
   }
 
   static double cubicDot(double time,    ///< Current time

@@ -34,7 +34,10 @@ public:
 
     void axisRequestStateCallback(const std_msgs::Int16::ConstPtr& msg);
     
-    odrive::ODriveSocketCan odrv;
+    /*ODriveSocketCan class is designed to handle communication with ODrive motor controllers 
+    using a CAN (Controller Area Network) interface*/
+    odrive::ODriveSocketCan odrv; 
+    //ODrive is an open-source motor controller used fo robotics and automation projects
 
 private:
     ros::Rate rate_;

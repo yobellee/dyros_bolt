@@ -9,11 +9,12 @@ JointController::JointController(const VectorQd& current_q, const VectorQd &curr
   current_time_(control_time), total_dof_(DyrosBoltModel::HW_TOTAL_DOF),
   start_time_{}, end_time_{}
 {
-
+  //testing what value control_time has
+  //std::cout<<"Yobel testing the value of control_time_: "<<control_time<<std::endl;
 }
 
 void JointController::compute()
-{
+{//total_dof=8
   for(unsigned int i=0; i<total_dof_; i++)
   {
     if(joint_enable_[i])
@@ -38,9 +39,11 @@ void JointController::setTarget(unsigned int joint_number, double target, double
     ROS_ERROR("JointController::setTarget - Out of range. Input = %u", joint_number);
     return ;
   }
-  start_time_[joint_number] = start_time;
+  start_time_[joint_number] = start_time; // in outr bolt, joint variable은 8개-> 6자유도 + pinjoint2개; start_time_[8]
   end_time_[joint_number] = end_time;
-  start_q_(joint_number) = current_q_(joint_number);
+
+  //start_q_(join_number): start_q_ 벡터의 joint_number번째 요소를 가리킴.*note: start_q_ is a vector which has 8 elements
+  start_q_(joint_number) = current_q_(joint_number);//motion planning starts from the joint's current position
   start_q_dot_(joint_number) = current_q_dot_(joint_number);
   target_q_(joint_number) = target;
 }

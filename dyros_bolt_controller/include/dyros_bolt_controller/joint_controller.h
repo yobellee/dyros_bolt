@@ -29,8 +29,20 @@ private:
   const unsigned int total_dof_;
   VectorQd start_q_;
   VectorQd start_q_dot_;
+
+/*
+<Difference between desired_q & target_q>
+target_q: final position that you want a joint or an actuator to reach.
+          the goal or endpoint of a planned movement
+          constant로 유지, time에 independent
+desired_q: intermediate or ongoing position that the control system calculates, at each moment in time, as it works towards achieving the target position. / represents the instantaneous goal for the current control cycle.--> current step의 'position goal'이다.
+          it changes over time as the system progresses toward the target position.
+          time에 dependent
+*/
   VectorQd desired_q_;
   VectorQd target_q_;
+
+
   const VectorQd& current_q_;
   const VectorQd& current_q_dot_;
   const double &current_time_;
