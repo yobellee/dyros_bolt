@@ -52,8 +52,10 @@ void CustomController::compute()
 {
     if(walking_enable_ == true)//determine whether the walking or motion sequence should be active. False면 will not attempt to compute or perform walking motion. Instead, it will hold its current position.
     {
-        updateInitialState();  
-        getRobotState();
+        updateInitialState(); //Initializing the state of the robot when the walking begins or when a step change occurs --> sets the initial conditions for the center of mass (CoM), pelvis, and feet positions based on the current step information.
+
+
+        getRobotState(); //
 
         if(motion_end_)
         {
@@ -134,40 +136,53 @@ void CustomController::writeDesired(const unsigned int *mask, VectorQd& desired_
 }
 
 void CustomController::updateInitialState()
-{
-    if(walking_tick_ == 0)
+{//'walking_tick_': counter or time-step variable used to track the progression of the walking cycle. Increments at each time step or control loop iteration to indicate how far along the robot is in its current walking motion.--> walking cycle의 current phase(start, middle, end)를 알려줘
+    if(walking_tick_ == 0)//beginning of the working process OR a new walking sequence
     {
-        calculateFootStepTotal();
+        calculateFootStepTotal();// ex: 앞으로 5m 전진하기 위해서는 'total footstep'이 얼마나 필요한지 check
 
-        com_float_init_ = model_.getCurrentCom();
-        pelv_float_init_.setIdentity();
+        com_float_init_ = model_.getCurrentCom(); // initial COM is obtained from the robot model// 3차원 벡터
+
+        pelv_float_init_.setIdentity(); //initial pelvis transormation = set to identity matrix. Meaning pelvis is at the origin with no initial orientation --> pelvis 기준으로 다른 부분들의 좌표를 표현하려고
+
+        //getting the current transformation matrices of the left and right feet from the robot model// 'world -> endeffector' 로 transform하는 matrix  
         lfoot_float_init_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)(0));
         rfoot_float_init_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)(1)); 
 
-        Eigen::Isometry3d ref_frame;
+        Eigen::Isometry3d ref_frame;// right foot이 바닥에 닿는지, left foot이 바닥에 닿는지에 따라 달라져. 
 
-        if(foot_step_(0, 6) == 0)  //right foot support
+        //foot_step_() 안의 첫 번째 요소의 의미, 현재의 step(지금 첫 step이니까 0)
+        if(foot_step_(0, 6) == 0)  //right foot support - 바닥에 첨 닿는게 오른발
         { ref_frame = rfoot_float_init_; }
-        else if(foot_step_(0, 6) == 1)
+        else if(foot_step_(0, 6) == 1) //left foot support
         { ref_frame = lfoot_float_init_; }
-        
-        lfoot_support_init_ = DyrosMath::multiplyIsometry3d(DyrosMath::inverseIsometry3d(ref_frame),lfoot_float_init_);
-        rfoot_support_init_ = DyrosMath::multiplyIsometry3d(DyrosMath::inverseIsometry3d(ref_frame),rfoot_float_init_);
-        pelv_support_init_ = DyrosMath::inverseIsometry3d(ref_frame);
+        //ref_frame을 바닥에 닿는 애의 좌표계로 하겠다.
+
+
+        lfoot_support_init_ = DyrosMath::multiplyIsometry3d(DyrosMath::inverseIsometry3d(ref_frame),lfoot_float_init_);//Tranform Matrix of "ref_frame->lfoot_float_init"
+        rfoot_support_init_ = DyrosMath::multiplyIsometry3d(DyrosMath::inverseIsometry3d(ref_frame),rfoot_float_init_);//Tranform Matrix of "ref_frame->rfoot_float_init"
+
+        pelv_support_init_ = DyrosMath::inverseIsometry3d(ref_frame);//Sets the initial transformation of the pelvis relative to the support foot's frame
+        //Transformation Matrix of "ref_frame->world frame"
         
         com_support_init_ = pelv_support_init_.linear()*com_float_init_ + pelv_support_init_.translation();
-        
-        pelv_support_euler_init_ = DyrosMath::rot2Euler(pelv_support_init_.linear());
-        rfoot_support_euler_init_ = DyrosMath::rot2Euler(rfoot_support_init_.linear());
+        //[com_x, com_y, com_z, 1] = T(ref->world) * [com_x, com_y, com_z, 1]^T
+        //좌항의 com vector는 ref_frame 기준 / 우항의 com vector는 world frame 기준
+
+
+        //converting rotation matrices to Euler angles.
+        pelv_support_euler_init_ = DyrosMath::rot2Euler(pelv_support_init_.linear()); 
+        rfoot_support_euler_init_ = DyrosMath::rot2Euler(rfoot_support_init_.linear()); 
         lfoot_support_euler_init_ = DyrosMath::rot2Euler(lfoot_support_init_.linear());
 
-        supportfoot_float_init_.setZero();
-        swingfoot_float_init_.setZero();
+        supportfoot_float_init_.setZero();//6D vector
+        swingfoot_float_init_.setZero();//6D vector
 
         if(foot_step_(0,6) == 1) //left suppport foot
         {
+        //Support foot initialization
         for(int i=0; i<2; i++)
-            supportfoot_float_init_(i) = lfoot_float_init_.translation()(i);
+            supportfoot_float_init_(i) = lfoot_float_init_.translation()(i);//발이 완전히 바닥에 닿아서 --> z축의 병진운동은 고려x
         for(int i=0; i<3; i++)
             supportfoot_float_init_(i+3) = DyrosMath::rot2Euler(lfoot_float_init_.linear())(i);
 
@@ -176,10 +191,12 @@ void CustomController::updateInitialState()
         for(int i=0; i<3; i++)
             swingfoot_float_init_(i+3) = DyrosMath::rot2Euler(rfoot_float_init_.linear())(i);
 
+        //below means that it ensures the robot starts from the correct position
         supportfoot_float_init_(0) = 0.0;
         swingfoot_float_init_(0) = 0.0;
         }
-        else
+
+        else //right support foot
         {
         for(int i=0; i<2; i++)
             supportfoot_float_init_(i) = rfoot_float_init_.translation()(i);
@@ -194,9 +211,13 @@ void CustomController::updateInitialState()
         supportfoot_float_init_(0) = 0.0;
         swingfoot_float_init_(0) = 0.0;
         }
-        pelv_support_start_ = pelv_support_init_;
-        total_step_num_ = foot_step_.col(1).size();
+
+
+        pelv_support_start_ = pelv_support_init_;// To reference this starting pose throughout the walking cycle.
+        total_step_num_ = foot_step_.col(1).size(); //storing the total number of steps --> important because knowing the total number of steps allows the robot to plan its trajectory accurately.
     }
+
+
     else if(current_step_num_ != 0 && walking_tick_ == t_start_) // step change 
     {  
         Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF+1, 1> q_temp;
