@@ -50,10 +50,10 @@ void CustomController::parameterSetting()
 
 void CustomController::compute()
 {
-    if(walking_enable_ == true)
+    if(walking_enable_ == true)//determine whether the walking or motion sequence should be active. False면 will not attempt to compute or perform walking motion. Instead, it will hold its current position.
     {
         updateInitialState();  
-        getRobotState();  
+        getRobotState();
 
         if(motion_end_)
         {
@@ -73,11 +73,11 @@ void CustomController::compute()
             { desired_q_(i) = q_des(i); } 
             // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
             updateNextStepTime();
-        }
-        else
-        {
+      }
+      else
+      {
             desired_q_ = current_q_;
-        }
+      }
     }
     else
     {
