@@ -26,7 +26,7 @@ mujoco_interface::mujoco_interface(ros::NodeHandle &nh, double Hz):
     mujoco_ros_msgs::JointSet안에는 header, time, mode, position, torque가 있음.
     "/mujoco_ros_interface/joint_set": Topic name. 다른 노드들이 이 topic을 subscribe해서 Mujoco의 joint set commands를 얻을 수 있으
     '100': que size    */
-    mujoco_joint_set_pub_=nh.advertise<mujoco_ros_msgs::JointSet>("/mujoco_ros_interface/joint_set",100);    
+    mujoco_joint_set_pub_=nh.advertise<mujoco_ros_msgs::JointSet>("/mujoco_ros_interface/joint_set",100); 
     mujoco_sim_command_pub_=nh.advertise<std_msgs::String>("/mujoco_ros_interface/sim_command_con2sim",100);
 
     /* <Setting up a ROS subscriber>
@@ -217,7 +217,7 @@ void mujoco_interface::simCommandCallback(const std_msgs::StringConstPtr &msg)
 void mujoco_interface::update()
 {
     ControlBase::update();
-    ControlBase::model_.updateMujCom(mujoco_virtual_);//mujoco_virtual은 6개의 요소로 이루어진 벡터
+    ControlBase::model_.updateMujCom(mujoco_virtual_);//mujoco_virtual은 6개의 joint angle요소로 이루어진 벡터이다.
     ControlBase::model_.updateMujComDot(mujoco_virtual_dot_);//mujoco_virtual_dot_도 6차원 벡터
 }
 

@@ -132,8 +132,9 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
 
     getCenterOfMassPosition(&com_);//calls the 'getCenterOfMassPosition' function with a pointer to the 'com_' variable. It calculates and sets the center of mass of the robot within the member variable 'com_'.
     getCenterOfMassPositionDot(&comDot_);// calculating and updating the velocity of the center of mass (COM) of the robot.
-    for(unsigned int i=0; i<2; i++)
+    for(unsigned int i=0; i<2; i++)//loop 2번 도는 이유: endeffector가 발 두개임.
     {
+        //(EndEffector)0: left foot, (EndEffector)1: right foot
         getTransformEndEffector((EndEffector)i, &current_transform_[i]);
         getJacobianMatrix4DoF((EndEffector)i, &leg_jacobian_[i]);
         getJacobianMatrix14DoF((EndEffector)i, &leg_with_vlink_jacobian_[i]);
@@ -193,27 +194,45 @@ void DyrosBoltModel::updateMujComDot(const Eigen::Vector6d &sim_base)
 
 
 void DyrosBoltModel::getTransformEndEffector // must call updateKinematics before calling this function
-(EndEffector ee, Eigen::Isometry3d* transform_matrix)
+(EndEffector ee, Eigen::Isometry3d* transform_matrix)//transform_matrix 형태: 4X4 matrix --> 내가 아는 그 회전 3X3, 병진 3x1 같이 있는 거
 {
     // *transform_matrix = rd_.link_[end_effector_id_[ee]].GetSpatialTranform();
     // transform_matrix->translation() = rd_.link_[end_effector_id_[ee]-2].xpos;
     // transform_matrix->linear() =rd_.link_[end_effector_id_[ee]-2].rotm;
 
+
+    //'transform_matrix->translation()': accesses the translation component of the Eigen::Isometry3d matrix, which represents the position of the end effector in 3D space.
+    //'transform_matrix->linear()': accesses the linear component of the Eigen::Isometry3d matrix, which represents the rotation or orientation of the end effector.
     transform_matrix->translation() = RigidBodyDynamics::CalcBodyToBaseCoordinates
-      (model_, q_virtual_, end_effector_id_[ee], base_position_, false);
+      (model_, q_virtual_, end_effector_id_[ee], base_position_, false);//CalcBodyToBaseCoordinates에서 'Body' refers to '(left or right)foot'
+      //To get the end effector's position relative to the base
+      //'transform_matrix->translation()' is a 3D vector 
     transform_matrix->linear() = RigidBodyDynamics::CalcBodyWorldOrientation
-      (model_, q_virtual_, end_effector_id_[ee], false).transpose();
+      (model_, q_virtual_, end_effector_id_[ee], false).transpose();// type: 3X3 rotation matrix// base frame에서 봤을 때, endeffector가 얼마나 orient했는지 알려고 transpose 시켜줘--> CalcBodyWorldOrientation의 결과는 body frame에서 본 world frame의 orient임.
 }
 
 
+
+
+
+//인자로 받는 자코비안 행렬: 6X4 matrix --> p벡터가 6개(병진,회전)요소로 이루어짐, 한쪽 발은 theta1, theta2, theta3, theta4(pinjoint)로 이루어짐. --> 이 함수는 계산된 자코비안을 이 두 번째 인자 'Eigen::Matrix<double, 6, 4> *jacobian'에 저장한다. 
+// J = 'dp/dtheta1','dp/dtheta2','dp/dtheta3','dp/dtheta4'  --> 6행 4열 행렬
 void DyrosBoltModel::getJacobianMatrix4DoF(EndEffector ee, Eigen::Matrix<double, 6, 4> *jacobian)
 {
     // *jacobian = rd_.link_[end_effector_id_[ee]-2].jac_.middleCols<4>(joint_start_index_[ee]+6);
-    Eigen::MatrixXd full_jacobian(6,MODEL_WITH_VIRTUAL_DOF);
+    Eigen::MatrixXd full_jacobian(6,MODEL_WITH_VIRTUAL_DOF);// 
     full_jacobian.setZero();
+
+    // Calculates the Jacobian matrix of a point on the end effector in a 6-dimensional space (3 for position and 3 for orientation).
     RigidBodyDynamics::CalcPointJacobian6D(model_, q_virtual_, end_effector_id_[ee],
                                             Eigen::Vector3d::Zero(), full_jacobian, false);
     // swap
+
+
+
+    //block은 submatrix추출하는것
+    //joint_start_index[leftfoot]=0,    joint_start_index[rightfoot]=4
+    //for more information fore below 2lines visit your IPAD Goodnotes(성균관대관련->학부연구생->DYROS->Code Analysis)
     jacobian->block<3, 4>(0, 0) = full_jacobian.block<3, 4>(3, joint_start_index_[ee]+6);
     jacobian->block<3, 4>(3, 0) = full_jacobian.block<3, 4>(0, joint_start_index_[ee]+6);
 }

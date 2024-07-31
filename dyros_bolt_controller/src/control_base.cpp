@@ -156,7 +156,7 @@ void ControlBase::update()
 void ControlBase::compute()
 {
 
-  joint_controller_.compute();
+  joint_controller_.compute();// start_time_에서 end_time_까지 가기 위한 중간중간의 desired_q 값 계속 계산하는거.
   custom_controller_.compute();
   rl_controller_.compute();
 
@@ -180,7 +180,6 @@ void ControlBase::compute()
 
   tick_ ++;
   control_time_ = tick_ / Hz_;
-
 }
 
 void ControlBase::reflect()

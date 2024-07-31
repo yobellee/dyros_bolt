@@ -20,7 +20,7 @@ class DyrosBoltModel
 public:
     DyrosBoltModel();
     
-    enum EndEffector : unsigned int {EE_LEFT_FOOT, EE_RIGHT_FOOT};
+    enum EndEffector : unsigned int {EE_LEFT_FOOT, EE_RIGHT_FOOT};//EE_LEFT_FOOT=0,EE_RIGHT_FOOT=1
 
     static constexpr size_t HW_TOTAL_DOF = 8;
     static constexpr size_t MODEL_DOF = 8;

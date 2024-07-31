@@ -58,10 +58,10 @@ int main(int argc, char **argv)
 
         ctr_obj->readDevice(); 
         //ControlBase의 readDevice함수 호출// action server와 관련 // 새로운 goal 받고 갱신하고 등등// 
-        //*******여기까지 Clear [Date: 2024.07.30]********//
 
         ctr_obj->update();
         //mujoco_interface의 update함수 호출
+        //*******여기까지 Clear [Date: 2024.07.31]********//
 
         ctr_obj->compute();
         ctr_obj->reflect();//모르고 compute 보기 전에 얘 좀 봤어...
