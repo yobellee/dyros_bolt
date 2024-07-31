@@ -96,8 +96,7 @@ void ControlBase::parameterInitialize()
 
 void ControlBase::readDevice()
 {
-  ros::spinOnce();//It processes a single round of callbacks for incoming messages. Essentially, it checks for new data (messages) that might have arrived from subscribed topics,
-   services, or actions.
+  ros::spinOnce();//It processes a single round of callbacks for incoming messages. Essentially, it checks for new data (messages) that might have arrived from subscribed topics,   services, or actions.
 
   // Action
   if (joint_control_as_.isNewGoalAvailable())
