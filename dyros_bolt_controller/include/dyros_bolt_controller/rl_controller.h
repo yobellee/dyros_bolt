@@ -41,7 +41,7 @@ private:
     const VectorQd& current_q_;
     const VectorQd& current_q_dot_;
     const Vector6d& virtual_q_dot_;
-    const Eigen::Quaterniond& base_quat_;
+    const Eigen::Quaterniond& base_quat_;//IMU data with filter
     Vector3d gravity = Vector3d(0, 0, -9.81);
 
     torch::jit::script::Module module;
