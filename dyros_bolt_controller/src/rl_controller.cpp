@@ -62,7 +62,7 @@ void RLController::initVariable()
     
 
     
-    torque_bound_ << 333.0, 232.0, 263.0, 289.0, 222.0, 166.0;//bound 이렇게 줬는데 맞는지 모르겠음 ask 박사님!    
+    torque_bound_ << 333.0, 232.0, 263.0, 289.0, 222.0, 166.0;//To 박사님: Torque bound는 이렇게 주었습니다.     
     //q_init_ << 0.0, 0.0, -0.24, 0.6, -0.36, 0.0;
 }
 
@@ -72,7 +72,7 @@ void RLController::loadNetwork()
     std::string path = "/home/dyros2/bolt_ws/src/dyros_bolt/dyros_bolt_controller/";//weight folder is in this directory
 
     std::ifstream file[8];
-    file[0].open(path + "weight/0_weight.txt", std::ios::in);
+    file[0].open(path + "weight/0_weight.txt", std::ios::in); //weight랑 bias 이름 앞에 숫자 규칙이 있는건지 그냥 궁금 : ask 박사님
     file[1].open(path + "weight/0_bias.txt", std::ios::in);
     file[2].open(path + "weight/2_weight.txt", std::ios::in);
     file[3].open(path + "weight/2_bias.txt", std::ios::in);
@@ -199,19 +199,18 @@ void RLController::processObservation()
 {
     int data_idx = 0;
 
-    // Projected gravity --> 박사님께 여쭤보기 챗 지피티에서 알려준 계산법이 두 개인데, 정반대의 결과임
-    Eigen::Vector3d projected_gravity = quat_rotate_inverse(base_quat_, Eigen::Vector3d(0, 0, -9.81));
+    // Projected gravity 
+    Eigen::Vector3d projected_gravity = quat_rotate_inverse(base_quat_, Eigen::Vector3d(0, 0, -9.81));//--> 박사님께 여쭤보기 챗 지피티에서 알려준 계산법이 두 개인데, 정반대의 결과임
     state_cur_(data_idx++) = projected_gravity(0);//state_curr_(0)=projected_gravity(0);
     state_cur_(data_idx++) = projected_gravity(1);
     state_cur_(data_idx++) = projected_gravity(2);
 
-///////여기서부터 봐!!!!!!![2024.08.02]///////////
     // Command (x, y, yaw)
     state_cur_(data_idx++) = target_vel_x_;
     state_cur_(data_idx++) = target_vel_y_;
     state_cur_(data_idx++) = target_yaw_; 
 
-    // Joint positions
+    // Joint positions --> extracting without ankle pinjoint
     for (int i = 0; i < 3; i++)
     {
         state_cur_(data_idx++) = current_q_(i);
@@ -222,7 +221,7 @@ void RLController::processObservation()
     }
 
 
-    // Joint velocities
+    // Joint velocities --> extracting without ankle pinjoint
     for (int i = 0; i < 3; i++)
     {
         state_cur_(data_idx++) = current_q_dot_(i);
@@ -231,7 +230,7 @@ void RLController::processObservation()
     {
         state_cur_(data_idx++) = current_q_dot_(i);
     }
-    
+
 
     // Previous actions
     for (int i = 0; i < num_action; i++)
@@ -251,6 +250,7 @@ void RLController::processObservation()
 
 void RLController::feedforwardPolicy()
 {
+    //Use ReLU active function --> 박사님께 괜찮은지 Check
     hidden_layer1_ = policy_net_w0_ * state_buffer_ + policy_net_b0_;
     hidden_layer1_ = hidden_layer1_.cwiseMax(0.0); // ReLU activation
 
@@ -275,8 +275,6 @@ void RLController::compute()
         {
             processObservation();
             feedforwardPolicy();
-
-
 
             // Update the last policy update time
             last_policy_update_time_ = current_time;
