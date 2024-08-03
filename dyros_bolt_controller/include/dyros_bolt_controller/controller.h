@@ -20,7 +20,7 @@ public:
 protected:
   inline void setMask(unsigned int *mask)
   {
-    *mask = (*mask | priority_);
+    *mask = (*mask | priority_);//priority_=64 같음.
   }
   inline void resetMask(unsigned int *mask)
   {

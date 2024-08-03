@@ -71,11 +71,11 @@ void JointController::updateControlMask(unsigned int *mask)
   {
     if(joint_enable_[i])
     {
-      setMask(&mask[i]);
+      setMask(&mask[i]);// Sets the mask for the i-th joint, indicating that this joint is controlled by the JointController.
     }
     else
     {
-      resetMask(&mask[i]);
+      resetMask(&mask[i]);//Resets the mask for the i-th joint, indicating that this joint is not controlled by the JointController.
     }
   }
 }
@@ -84,7 +84,7 @@ void JointController::writeDesired(const unsigned int *mask, VectorQd& desired_q
 {
   for(unsigned int i=0; i<total_dof_; i++)
   {
-    if(isAvailable(&mask[i]))
+    if(isAvailable(&mask[i]))// Check whether 'priority_' bit is set in the 'mask[i]'
     {
       desired_q(i) = desired_q_(i);
       std::cout<<"joint("<<i<<"): "<<desired_q(i)<<std::endl;

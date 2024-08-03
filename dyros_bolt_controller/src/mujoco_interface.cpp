@@ -231,24 +231,26 @@ void mujoco_interface::writeDevice()
 {
     if (ctrl_mode == "position")
     {
-        mujoco_joint_set_msg_.MODE = 0;
+        mujoco_joint_set_msg_.MODE = 0;//position control mode
 
-        if(mujoco_init_receive == true)
+        if(mujoco_init_receive == true)// Mujoco initialization has been recieved.
         {
             for(int i=0;i<total_dof_;i++)
-            {
-              mujoco_joint_set_msg_.position[i] = desired_q_(i);
+            {//'mujoco_joint_set_msg_': an instance of a ROS message that is used to send joint commands to the MuJoCo simulator. 
+              mujoco_joint_set_msg_.position[i] = desired_q_(i);//'compute()'에서 계산된 desired_q_임.
             }
-            mujoco_joint_set_msg_.header.stamp = ros::Time::now();
-            mujoco_joint_set_msg_.time = mujoco_sim_time;
+
+            mujoco_joint_set_msg_.header.stamp = ros::Time::now();//for synchronization
+            mujoco_joint_set_msg_.time = mujoco_sim_time;//current time in mujoco simulation
+            // simulation time을 message에 넣는 이유: useful for debugging, analysis, and ensuring that the simulation state is accurately tracked over time
             // mujoco_joint_set_msg_.time = ControlBase::currentTime();
-            mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);
+            mujoco_joint_set_pub_.publish(mujoco_joint_set_msg_);//To send the message containing joint commands to the MuJoCo simulator via a ROS topic.
             mujoco_sim_last_time = mujoco_sim_time;
         }
     }
     else if (ctrl_mode == "torque")
     {
-        mujoco_joint_set_msg_.MODE = 1;
+        mujoco_joint_set_msg_.MODE = 1;//torque control mode
 
         if(mujoco_init_receive == true)
         {
@@ -270,23 +272,26 @@ void mujoco_interface::writeDevice()
 
 void mujoco_interface::wait()
 {
-    bool test_b = false;
+    bool test_b = false;// 밑에, ROS_INFO_COND 출력하고 싶으면 true로 바꾸고 실행
 
-    ros::Rate poll_rate(20000);
-    int n = 0;
+    ros::Rate poll_rate(20000);// control the frequency of a loop 
+    int n = 0;//뒤에 나올 첫번째 while문이 몇번 돌았나 count하는 놈.
 
-    ROS_INFO_COND(test_b, " wait loop enter");
-    while ((mujoco_sim_time < (mujoco_sim_last_time + 1.0 / dyn_hz)) && ros::ok())
+    ROS_INFO_COND(test_b, " wait loop enter");//Logs the message only if when 'test_b' is true
+
+    //This loop runs while the current simulation time (mujoco_sim_time) is less than the target time (mujoco_sim_last_time + 1.0 / dyn_hz) and the ROS node is still running (ros::ok()).
+    //Why dual loop structure: ensures that the control loop operates at the correct frequency, processes incoming ROS messages, and synchronizes with the MuJoCo simulation time.
+    while ((mujoco_sim_time < (mujoco_sim_last_time + 1.0 / dyn_hz)) && ros::ok())//'1.0/dyn_hz': represents the duration of one control cycle. 
     {
-        ros::spinOnce();
-        poll_rate.sleep();
+        ros::spinOnce();//processes callbacks only once and then returns control to the rest of the code.
+        poll_rate.sleep();// 이 While문이 20000Hz에 맞게 돌아가게 하려고
         n++;
     }
     ROS_INFO_COND(test_b, " wait loop exit with n = %d", n);
 
     while((mujoco_sim_time<(mujoco_sim_last_time+1.0/dyn_hz))&&ros::ok()){
         ros::spinOnce();
-        poll_rate.sleep();
+        poll_rate.sleep();// 이 While문이 20000Hz에 맞게 돌아가게 하려고
 
     }
 }

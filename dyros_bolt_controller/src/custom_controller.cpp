@@ -54,27 +54,31 @@ void CustomController::compute()
     {
         updateInitialState(); //Initializing the state of the robot when the walking begins or when a step change occurs --> sets the initial conditions for the center of mass (CoM), pelvis, and feet positions based on the current step information.
 
-
-        getRobotState(); //
-
-        if(motion_end_)
+        getRobotState(); //Update the controller with the current state of the robot
+        
+        if(motion_end_)//check if the current motion sequence has ended.
         {
             // getComTrajectory();
             // getPelvTrajectory();
             // getFootTrajectory();
             // supportToFloat();
-            circling_motion();
+            circling_motion();//발 계속 굴리는 거 생각
 
-            computeIK(pelv_traj_float_, lfoot_traj_float_, rfoot_traj_float_, q_des);
+            computeIK(pelv_traj_float_, lfoot_traj_float_, rfoot_traj_float_, q_des); //computes the inverse kinematics (IK) to determine the desired joint positions (q_des) based on the current trajectories of the pelvis and feet
+
+
 
             // output << walking_tick_ <<"\t" << lfoot_traj_float_.translation()(2) <<"\t" << lfoot_traj_float_.translation()(0) << "\t" 
             //                                << rfoot_traj_float_.translation()(2) <<"\t" << rfoot_traj_float_.translation()(0) << "\t"
             //                                << q_des(0) << "\t" << q_des(1) << "\t" << q_des(2) << "\t" << q_des(3) << "\t" << q_des(4) << "\t" << q_des(5) << "\t" << q_des(6) << "\t" << q_des(7) << "\n";
 
+
             for(int i=0; i<8; i++)
             { desired_q_(i) = q_des(i); } 
             // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
-            updateNextStepTime();
+
+            //updating the timing for the next step in the walking sequence
+            updateNextStepTime();//'walking_tick_'이 함수에서 update
       }
       else
       {
@@ -88,12 +92,13 @@ void CustomController::compute()
 }
 
 void CustomController::circling_motion()
-{
+{ //'pelv_traj_float_': representing the trajectory of the pelvis
   pelv_traj_float_.translation().setZero();
   pelv_traj_float_.linear().setIdentity();
 
+  //x-z plane에서 circle 그린다고 생각
   rfoot_traj_float_.translation()(0) = -0.025 * cos(0.5*M_PI*walking_tick_/hz_);
-  rfoot_traj_float_.translation()(1) = -0.1235;
+  rfoot_traj_float_.translation()(1) = -0.1235;//y 방향으로 발끝이 안 움직이게 lock
   rfoot_traj_float_.translation()(2) = -0.401123114 + 0.025 * sin(0.5*M_PI*walking_tick_/hz_);
 
   lfoot_traj_float_.translation()(0) = -0.025 * cos(0.5*M_PI*(walking_tick_/hz_ - 1.0));
@@ -106,11 +111,13 @@ void CustomController::circling_motion()
 
 void CustomController::updateControlMask(unsigned int *mask)
 {
-    if(walking_enable_)
+    if(walking_enable_)//walking mode activated.
     {
         for (int i=0; i<total_dof_; i++)
         {
-            mask[i] = (mask[i] | PRIORITY);
+            //PRIORITY = 8 = 00001000 [in binary]
+            // if mask[i] is '00000001', then '(mask[i] | PRIORITY)' results in 'mask[i]' being '00001001' 
+            mask[i] = (mask[i] | PRIORITY);//sets the 'PRIORITY' bit in each element of the mask array
         }
         // mask[3] = mask[3] & ~PRIORITY; 
         // mask[7] = mask[7] & ~PRIORITY; 
@@ -159,6 +166,7 @@ void CustomController::updateInitialState()
         //ref_frame을 바닥에 닿는 애의 좌표계로 하겠다.
 
 
+        //ref frame에서 본~
         lfoot_support_init_ = DyrosMath::multiplyIsometry3d(DyrosMath::inverseIsometry3d(ref_frame),lfoot_float_init_);//Tranform Matrix of "ref_frame->lfoot_float_init"
         rfoot_support_init_ = DyrosMath::multiplyIsometry3d(DyrosMath::inverseIsometry3d(ref_frame),rfoot_float_init_);//Tranform Matrix of "ref_frame->rfoot_float_init"
 
@@ -219,23 +227,25 @@ void CustomController::updateInitialState()
 
 
     else if(current_step_num_ != 0 && walking_tick_ == t_start_) // step change 
-    {  
+    {  //this block is executed during a step change in the robot's walking cycle
         Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF+1, 1> q_temp;
         Eigen::Matrix<double, DyrosBoltModel::MODEL_WITH_VIRTUAL_DOF, 1>  qdot_temp, qddot_temp;
         q_temp.setZero();
         qdot_temp.setZero();
         qddot_temp.setZero();
 
-        q_temp.segment<8>(6) = current_q_.segment<8>(0);
+        //'.segment<8>(6)': 8개의 요소, starting index:6 
+        q_temp.segment<8>(6) = current_q_.segment<8>(0);//q_temp vetor의 '7번째 요소~14번째요소'를 current_q_vector의 8개 값으로 둔다.
         qdot_temp.segment<8>(6)= current_qdot_.segment<8>(0);  
         // q_temp.segment<8>(6) = desired_q_not_compensated_.segment<8>(0);
         
         model_.updateKinematics(q_temp, qdot_temp, qddot_temp);
 
+        //위에랑 SAME
         lfoot_float_init_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)(0));
         rfoot_float_init_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)(1));
         com_float_init_ = model_.getCurrentCom();
-        pelv_float_init_.setIdentity();  
+        pelv_float_init_.setIdentity();
 
         Eigen::Isometry3d ref_frame;
 
@@ -264,20 +274,23 @@ void CustomController::getRobotState()
     qdot_temp.setZero(); 
     qddot_temp.setZero(); 
 
-    q_temp.segment<8>(6) = current_q_.segment<8>(0);   
+    q_temp.segment<8>(6) = current_q_.segment<8>(0);//q_temp에서 뒤의 8개 요소들은, 6개의 조인트와 2개의 핀조인트에 해당   
     qdot_temp.segment<8>(6)= current_qdot_.segment<8>(0);
 
     model_.updateKinematics(q_temp, qdot_temp, qddot_temp);
     com_float_current_ = model_.getCurrentCom();
     com_float_current_dot_= model_.getCurrentComDot();
+    //Transformation matrix of 'worldframe->footframe'
     lfoot_float_current_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)0); 
     rfoot_float_current_ = model_.getCurrentTransform((DyrosBoltModel::EndEffector)1);
 
+    //support foot에 따라 ref_frame이 바뀌는 거 생각
     if(foot_step_(current_step_num_, 6) == 0) 
     { supportfoot_float_current_ = rfoot_float_current_; }
     else if(foot_step_(current_step_num_, 6) == 1)
     { supportfoot_float_current_ = lfoot_float_current_; }
 
+    //transformation matrix of 'supportfootframe -> otherframe' 
     pelv_support_current_ = DyrosMath::inverseIsometry3d(supportfoot_float_current_);
     pelv_float_current_.setIdentity();
     lfoot_support_current_ = DyrosMath::multiplyIsometry3d(pelv_support_current_,lfoot_float_current_);
@@ -1051,18 +1064,19 @@ void CustomController::supportToFloat()
 
 void CustomController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::Isometry3d float_lleg_transform, Eigen::Isometry3d float_rleg_transform, Eigen::Vector8d& q_des)
 {
-    Eigen::Vector3d L_r, R_r;
-    Eigen::Vector3d L_hip, R_hip;
+    Eigen::Vector3d L_r, R_r; //vectors from ankle to hip
+    Eigen::Vector3d L_hip, R_hip; //Positions of the left and right hips
 
-    Eigen::Matrix3d R_knee_ankle_Y_rot, L_knee_ankle_Y_rot;
-    Eigen::Matrix3d pelv_lhipx_rot, pelv_rhipx_rot;
-    Eigen::Matrix3d L_hip_rot, R_hip_rot;
+    Eigen::Matrix3d R_knee_ankle_Y_rot, L_knee_ankle_Y_rot; //Rotation matrices for knee and ankle joints.
+    Eigen::Matrix3d pelv_lhipx_rot, pelv_rhipx_rot; //Rotation matrices for hip joints.
+    Eigen::Matrix3d L_hip_rot, R_hip_rot; //Rotation matrices for the hips.
 
-    Eigen::Vector3d L_1, L_2, L_3, L_4, R_1, R_2, R_3, R_4;
-    Eigen::Vector3d L_Y_offset, R_Y_offset;
+    Eigen::Vector3d L_1, L_2, L_3, L_4, R_1, R_2, R_3, R_4; //Link vectors for the left and right legs.
+    Eigen::Vector3d L_Y_offset, R_Y_offset;//Y offsets for the left and right legs
 
     //L_upper and L_lower are the length of z component of the link 3 and 4
-    double L_C = 0, R_C = 0, L_alpha = 0, R_alpha = 0, L_upper = 0.2 , L_lower = 0.2;
+    double L_C = 0, R_C = 0, L_alpha = 0, R_alpha = 0, L_upper = 0.2 , L_lower = 0.2;//'L_C', 'R_C': Lengths of the vectors from ankle to hip. //'L_alpha', 'R_alpha': Knee angles
+
 
     //pelvis to hip_x
     L_1 << 0, +0.0636, 0;
@@ -1084,17 +1098,17 @@ void CustomController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::
     R_Y_offset << 0, R_3(1) + R_4(1), 0;
 
     //get the rotation matrix of the hip_x joint
-    pelv_lhipx_rot = DyrosMath::rotateWithX(q_des(0));
-    pelv_rhipx_rot = DyrosMath::rotateWithX(q_des(4));
+    pelv_lhipx_rot = DyrosMath::rotateWithX(q_des(0));//Rotation matrix for the left hip around the x-axis.
+    pelv_rhipx_rot = DyrosMath::rotateWithX(q_des(4));//Rotation matrix for the right hip around the x-axis.
 
     //Caculate the Vetor from  the float to the hip_y
-    L_hip = float_pelv_transform.translation() + float_pelv_transform.rotation() * (L_1 + pelv_lhipx_rot * L_2);
-    R_hip = float_pelv_transform.translation() + float_pelv_transform.rotation() * (R_1 + pelv_lhipx_rot * R_2);
+    L_hip = float_pelv_transform.translation() + float_pelv_transform.rotation() * (L_1 + pelv_lhipx_rot * L_2);// Position of the left hip in the floating base frame.
+    R_hip = float_pelv_transform.translation() + float_pelv_transform.rotation() * (R_1 + pelv_lhipx_rot * R_2); //Position of the right hip in the floating base frame.
 
     //calculate the relative vector from the ankle to the hip_y
     //used for caculating knee, and anhle angle by using the law of cosine 2 & the law of sine 2
-    L_r = float_lleg_transform.rotation().transpose() * (L_hip - float_lleg_transform.translation()) - pelv_lhipx_rot * L_Y_offset;
-    R_r = float_rleg_transform.rotation().transpose() * (R_hip - float_rleg_transform.translation()) - pelv_rhipx_rot * R_Y_offset;
+    L_r = float_lleg_transform.rotation().transpose() * (L_hip - float_lleg_transform.translation()) - pelv_lhipx_rot * L_Y_offset;// Vector from the left ankle to the left hip.
+    R_r = float_rleg_transform.rotation().transpose() * (R_hip - float_rleg_transform.translation()) - pelv_rhipx_rot * R_Y_offset;// Vector from the right ankle to the right hip.
 
     //calcualte the length of vector L_r and R_r [l3]
     L_C = sqrt( pow(L_r(0),2) + pow(L_r(1),2) + pow(L_r(2),2) );
@@ -1104,8 +1118,8 @@ void CustomController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::
     //l3/sin(angle3) = l1/sin(angle1) [l1=L_up, l3=L_C, angle1 = alpha, angle3 = PI + q_des(2)]
     // double asin_argument;
 
-    L_alpha = asin(L_upper / L_C * sin(M_PI + q_des(2)));
-    R_alpha = asin(L_upper / R_C * sin(M_PI + q_des(6)));
+    L_alpha = asin(L_upper / L_C * sin(M_PI + q_des(2)));//knee angle for the left leg
+    R_alpha = asin(L_upper / R_C * sin(M_PI + q_des(6)));//knee angle for the right leg
 
     //initialize the hip_rot matrix [hip_rot = hipx_rot * hipy_rot]
     L_hip_rot.setZero(); R_hip_rot.setZero();
@@ -1114,10 +1128,10 @@ void CustomController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::
     //knee_rot = rot_y(angle of knee[q_des(2)]), ankle_rot = rot_y(angle of ankle[q_des(3)])
     //knee_rot * ankle_rot = rot_y(q_des(2) + q_des(3))
     //transpose matrix of rot (angle) = rot(-angle) -> (knee_rot * ankle_rot)^T = rot_y(-q_des(2) - q_des(3))
-    L_knee_ankle_Y_rot = DyrosMath::rotateWithY(-q_des(2)-q_des(3));
+    L_knee_ankle_Y_rot = DyrosMath::rotateWithY(-q_des(2)-q_des(3));//Rotation matrix for the left knee and ankle
     R_knee_ankle_Y_rot = DyrosMath::rotateWithY(-q_des(6)-q_des(7));
 
-    L_hip_rot = float_pelv_transform.rotation().transpose() * float_lleg_transform.rotation() * L_knee_ankle_Y_rot;
+    L_hip_rot = float_pelv_transform.rotation().transpose() * float_lleg_transform.rotation() * L_knee_ankle_Y_rot;//rotation matrix for the left hip
     R_hip_rot = float_pelv_transform.rotation().transpose() * float_rleg_transform.rotation() * R_knee_ankle_Y_rot;
 
     //Left hipx, hipy, knee, ankle angle
@@ -1127,16 +1141,16 @@ void CustomController::computeIK(Eigen::Isometry3d float_pelv_transform, Eigen::
     // hip_rot =  |  s0*s1   c0  -s0*c1 |   (0 = qdes(0), 1 = q_des(1))
     //            | -c0*s1   s0   c0*c1 |
     //q_des(0) = atan2(R32,R22)
-    q_des(0) = atan2(L_hip_rot(2,1), L_hip_rot(1,1));
+    q_des(0) = atan2(L_hip_rot(2,1), L_hip_rot(1,1));//Angle of the left hip around the x-axis.
     //q_des(1) = atan2(-R31,R33)
-    q_des(1) = atan2(-L_hip_rot(2,0), L_hip_rot(2,2));
+    q_des(1) = atan2(-L_hip_rot(2,0), L_hip_rot(2,2));//Angle of the left hip around the y-axis.
     //by the law of cosine 2 -> l3^2 = l1^2 + l2^2 - 2*l1*l2*cos(angle3) [l1=L_up, l2=L_low, l3=L_C, angle3 = PI + q_des(2)]
-    q_des(2) = acos((pow(L_upper,2) + pow(L_lower,2) - pow(L_C,2)) / (2 * L_upper * L_lower)) - M_PI;
+    q_des(2) = acos((pow(L_upper,2) + pow(L_lower,2) - pow(L_C,2)) / (2 * L_upper * L_lower)) - M_PI;//Angle of the left knee.
     //q_des(3) can be geomatically obtained using vector L_r & alpha
-    q_des(3) = -atan2(L_r(0), sqrt(pow(L_r(1),2) + pow(L_r(2),2))) + L_alpha;
+    q_des(3) = -atan2(L_r(0), sqrt(pow(L_r(1),2) + pow(L_r(2),2))) + L_alpha;//Angle of the left ankle.
+
 
     //Right hipx, hipy, knee, ankle angle
-    
     q_des(4) = atan2(R_hip_rot(2,1), R_hip_rot(1,1));
     q_des(5) = atan2(-R_hip_rot(2,0), R_hip_rot(2,2));
     q_des(6) = acos((pow(L_upper,2) + pow(L_lower,2) - pow(R_C,2)) / (2 * L_upper * L_lower)) - M_PI;

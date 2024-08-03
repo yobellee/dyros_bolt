@@ -32,10 +32,10 @@ private:
 
 /*
 <Difference between desired_q & target_q>
-target_q: final position that you want a joint or an actuator to reach.
+target_q_: final position that you want a joint or an actuator to reach.
           the goal or endpoint of a planned movement
           constant로 유지, time에 independent
-desired_q: intermediate or ongoing position that the control system calculates, at each moment in time, as it works towards achieving the target position. / represents the instantaneous goal for the current control cycle.--> current step의 'position goal'이다.
+desired_q_: intermediate or ongoing position that the control system calculates, at each moment in time, as it works towards achieving the target position. / represents the instantaneous goal for the current control cycle.--> current step의 'position goal'이다.
           it changes over time as the system progresses toward the target position.
           time에 dependent
 */

@@ -109,7 +109,7 @@ void DyrosBoltModel::updateKinematics(const Eigen::VectorXd& q, const Eigen::Vec
     B_.setZero(MODEL_WITH_VIRTUAL_DOF);
 
     //there's no function for NonlinearEffects -->think the below two lines are trash
-    RigidBodyDynamics::NonlinearEffects(model_, q, qddot, G_);//Purpose: to calculate the dynamic effects on the robot, when it experiences joint accelerations(qddot). --> It helps determine "how much force or torque is required" to counteract these effects to maintain a specific motion or state.
+    RigidBodyDynamics::NonlinearEffects(model_, q, qddot, G_);//Purpose: to calculate the dynamic effects on the robot, when it experiences joint accelerations(qddot). --> It helps determine "how much Force or Torque is required" to counteract these effects to maintain a specific motion or state. 
     RigidBodyDynamics::NonlinearEffects(model_, q, qdot, B_);//Purpose: to compute the effects due to the robot's motion (velocities), capturing Coriolis and centrifugal forces specifically. Then by this information give the compensation
 
     // Gravity + Coriolis

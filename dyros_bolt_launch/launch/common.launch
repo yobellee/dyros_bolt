@@ -4,6 +4,7 @@
   <!-- <node name="dyros_bolt_smach" pkg="dyros_bolt_smach" type="mini_drc_mission_toplevel.py" respawn="false" output="screen"> -->
     <!-- <param name="run_mode" type="string" value="$(arg run_mode)" /> -->
   <!-- </node> -->
+  <!-- gain.yaml에서 Torque 제어 gain들 정의되어 있어. -->
   <node name="dyros_bolt_controller" pkg="dyros_bolt_controller" type="dyros_bolt_controller" required="true" respawn="false" output="screen">
     <param name="run_mode" type="string" value="$(arg run_mode)" />
     <param name="ctrl_mode" type="string" value="$(arg ctrl_mode)" />

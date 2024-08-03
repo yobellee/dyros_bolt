@@ -3,6 +3,7 @@
 namespace dyros_bolt_controller
 {
 
+
 ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   is_first_boot_(true), Hz_(Hz), control_mask_{}, total_dof_(DyrosBoltModel::HW_TOTAL_DOF),shutdown_flag_(false),
   joint_controller_(q_, q_dot_filtered_, control_time_),
@@ -155,37 +156,39 @@ void ControlBase::update()
 
 void ControlBase::compute()
 {
-
-  joint_controller_.compute();// start_time_에서 end_time_까지 가기 위한 중간중간의 desired_q 값 계속 계산하는거.
+  // start_time_에서 end_time_까지 가기 위한 중간중간의 desired_q 값 계속 계산하는거.-> 상황에 따라서, 선택하는 compute가 다름
+  joint_controller_.compute();
   custom_controller_.compute();
   rl_controller_.compute();
 
+  //ControlMask to help coordinate these controllers by specifying which joints each controller is responsible for at any given moment.
   joint_controller_.updateControlMask(control_mask_);
   custom_controller_.updateControlMask(control_mask_);
-  // rl_controller_.updateControlMask(control_mask_);
-  // std::cout << "control_mask_ : " << control_mask_[0] << control_mask_[1] << control_mask_[2] << control_mask_[3] << std::endl;
+  //rl_controller_.updateControlMask(control_mask_);
+    //control_mask_[8]=[7,0,0,0,0,0,0,0]
+
   joint_controller_.writeDesired(control_mask_, desired_q_);
   custom_controller_.writeDesired(control_mask_, desired_q_);
   // rl_controller_.writeDesired(control_mask_, desired_torque_);
 
-  // Torque Control
+  // Torque Control --> 'PD control' + 'feedforward'
   // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
-  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)
+  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복
   {
-    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]) + model_.command_Torque(i);
+    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]) + model_.command_Torque(i);// don't think about filterd
     // desired_torque_[i] = desired_q_(i);
     // desired_torque_[i] = model_.command_Torque(i);
     // std::cout << "desired_torque_[i] : " << desired_torque_.transpose() << std::endl;
   }
 
-  tick_ ++;
-  control_time_ = tick_ / Hz_;
+  tick_ ++;//'tick': compute 함수가 몇번 불렸는지 count해주는 놈.
+  control_time_ = tick_ / Hz_;// keeps track of the elapsed time since the start of the control loop in seconds.
 }
 
 void ControlBase::reflect()
 {
   // dyros_bolt_msgs::WalkingState msg;
-  joint_robot_state_pub_.msg_.header.stamp = ros::Time::now(); //assigns the current time to the stamp field of the header in the JointState message
+  joint_robot_state_pub_.msg_.header.stamp = ros::Time::now(); //assigns the current time to the stamp field of the header in the joint_robot_state(JointState클래스의 객체) message
 /* 
 - header: provide information about the state of the joints at a particular point in time
 - stamp : records the exact time when the message data is relevant or was captured. Important for synchronizing data across different parts of a robotic system --> timestamp means recording time 
@@ -207,6 +210,8 @@ void ControlBase::reflect()
     joint_robot_state_pub_.msg_.effort[i] = desired_torque_(i);
   }
 
+  //'trylock()': To ensure that the publisher is not currently being accessed by another thread.
+  //'unlockAndPublish()': To publish the message to the ROS topic in a thread-safe manner
   if(joint_state_pub_.trylock())
   {
     joint_state_pub_.unlockAndPublish();
@@ -216,9 +221,10 @@ void ControlBase::reflect()
     joint_robot_state_pub_.unlockAndPublish();
   }
 
-  if(joint_control_as_.isActive())
+  //Checking if the action server status
+  if(joint_control_as_.isActive())// determine whether there is an ongoing action that the action server 'joint_control_as_' is handling
   {
-    bool all_disabled = true;
+    bool all_disabled = true;//모든 joint가 disabled되었는지 확인하는 용도
     for (int i=0; i<DyrosBoltModel::HW_TOTAL_DOF; i++)
     {
       if (joint_controller_.isEnabled(i))
@@ -226,10 +232,12 @@ void ControlBase::reflect()
         all_disabled = false;
       }
     }
+
+    //To declare the action as successfully completed if all joints are disabled.
     if (all_disabled)
     {
-      joint_control_result_.is_reached = true;
-      joint_control_as_.setSucceeded(joint_control_result_);
+      joint_control_result_.is_reached = true;//indicating that the goal has been reached.
+      joint_control_as_.setSucceeded(joint_control_result_);//Informs the action server that the goal has been successfully completed
     }
   }
   // if (walking_controller_.walking_state_send == true)

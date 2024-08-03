@@ -59,16 +59,17 @@ int main(int argc, char **argv)
         ctr_obj->readDevice(); 
         //ControlBase의 readDevice함수 호출// action server와 관련 // 새로운 goal 받고 갱신하고 등등// 
 
-        ctr_obj->update();
-        //mujoco_interface의 update함수 호출
-        //*******여기까지 Clear [Date: 2024.07.31]********//
+        ctr_obj->update();//mujoco_interface의 update함수 호출 // Updating kinematic and dynamic models of the robot. // Applying any necessary state transformations. // Filtering sensor data.
+                
+        ctr_obj->compute();//mujoco_interface의 compute함수 호출 // Calculating desired joint positions, velocities, and torques. // Executing control algorithms (e.g., PID control, RL control, trajectory generation).
 
-        ctr_obj->compute();
-        ctr_obj->reflect();//모르고 compute 보기 전에 얘 좀 봤어...
-        ctr_obj->writeDevice();
-        ctr_obj->wait();
+        ctr_obj->reflect();//updating internal state representation, and publishing the current state to ROS topics.     
+        
+        ctr_obj->writeDevice();// Sends the computed control commands to the robot's actuators // Sending desired joint positions, velocities, and torques to the motors. // Ensuring the commands are executed on the robot.
 
-        if(ctr_obj->isShuttingDown())
+        ctr_obj->wait();// to ensure the control loop runs at a consistent frequency // synchronize the "control loop" with the "simulation time in MUJOCO simulator"
+
+        if(ctr_obj->isShuttingDown())//Check if the 'ctr_obj' has received a shutdown signal
         {
           break;
         }
@@ -77,4 +78,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
