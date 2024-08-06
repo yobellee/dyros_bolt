@@ -75,7 +75,7 @@ void CustomController::compute()
 
             for(int i=0; i<8; i++)
             { desired_q_(i) = q_des(i); } 
-            // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
+            //std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
 
             //updating the timing for the next step in the walking sequence
             updateNextStepTime();//'walking_tick_'이 함수에서 update

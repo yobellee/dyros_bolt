@@ -4,6 +4,7 @@
 #include "dyros_bolt_controller/dyros_bolt_model.h"
 #include <torch/script.h> // Include the PyTorch C++ API
 #include <ros/ros.h>
+#include <std_msgs/Float64MultiArray.h>//changed here
 #include <sensor_msgs/Joy.h>
 #include <fstream>
 #include "math_type_define.h"
@@ -46,8 +47,7 @@ private:
     const VectorQd& current_q_;
     const VectorQd& current_q_dot_;
     const Vector6d& virtual_q_dot_;
-    const Eigen::Quaterniond& base_quat_;//IMU data with filter
-    //const tf::Quaternion& base_quat_;//changed here    
+    const Eigen::Quaterniond& base_quat_;//IMU data with filter  
 
     Vector3d gravity = Vector3d(0, 0, -9.81);
 
@@ -56,7 +56,7 @@ private:
     Eigen::Matrix<double, 6, 1> torque_bound_;
     VectorQd desired_torque_;
 
-    bool rl_enable_ = false;
+    bool rl_enable_ = true;//changed (false였는데 true로)
 
     torch::Tensor observation;
     torch::Tensor action;
@@ -93,8 +93,8 @@ private:
     bool is_write_file_ = true;
 
     ros::NodeHandle nh_;
-    //void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
     ros::Subscriber joy_sub_;
+    //ros::Publisher torque_pub_;//changed here
 
     double target_vel_x_ = 0.0;
     double target_vel_y_ = 0.0;
