@@ -150,6 +150,10 @@ void ControlBase::update()
 
   model_.updateKinematics(q_vjoint, q_vjoint_dot, q_vjoint_ddot);  // Update end effector positions and Jacobians
 
+  // Update the base_quat_ with the latest orientation data//박사님께 이렇게 update하는거 맞는지 묻기
+  base_quat_ = Eigen::Quaterniond(imu_data_.w(), imu_data_.x(), imu_data_.y(), imu_data_.z());
+
+
 }
 
 
@@ -164,16 +168,17 @@ void ControlBase::compute()
   //ControlMask to help coordinate these controllers by specifying which joints each controller is responsible for at any given moment.
   joint_controller_.updateControlMask(control_mask_);
   custom_controller_.updateControlMask(control_mask_);
-  //rl_controller_.updateControlMask(control_mask_);
+  rl_controller_.updateControlMask(control_mask_);
     //control_mask_[8]=[7,0,0,0,0,0,0,0]
 
   joint_controller_.writeDesired(control_mask_, desired_q_);
   custom_controller_.writeDesired(control_mask_, desired_q_);
-  // rl_controller_.writeDesired(control_mask_, desired_torque_);
+  rl_controller_.writeDesired(control_mask_, desired_torque_);
 
   // Torque Control --> 'PD control' + 'feedforward'
   // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
-  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복
+  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
+  //박사님 질문--> 여기 그냥 아예 지우면 될듯, 앞에서 "rl_controller_.writeDesired(control_mask_, desired_torque_);"로 torque값 받으니까.
   {
     desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]) + model_.command_Torque(i);// don't think about filterd
     // desired_torque_[i] = desired_q_(i);

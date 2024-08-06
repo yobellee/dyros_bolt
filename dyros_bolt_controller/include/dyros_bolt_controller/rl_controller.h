@@ -7,21 +7,26 @@
 #include <sensor_msgs/Joy.h>
 #include <fstream>
 #include "math_type_define.h"
+#include <tf/transform_datatypes.h>
+#include <tf/tf.h>
 
 namespace dyros_bolt_controller
 {
-
-    //---RL controller designed by YOBEL [Data: 2024.08.03]---//
+    //---RL controller designed by YOBEL Sungkook Lee [Data: 2024.08.02]---//
 class RLController
 {
     public:
-    static constexpr unsigned int PRIORITY = 8;//priority이렇게 두는 거 맞음? Mask를 통해서 어떤 controller쓸건지 정해진다는데, 정확히 어떤 원린지 박사님께 묻기
+    static constexpr unsigned int PRIORITY = 32;
+    //joint controller PRIORITY = 64 // 1등 우선순위
+    //custom controller PRIORITY = 8 // 3등우선순위
+    //rl controller PRIORITY = 32 // 2등 우선순위
+    //--> 앞의 두 controller와 PRIORITY를 달리 둠.
 
     RLController(const VectorQd& current_q, const VectorQd& current_q_dot, const Vector6d& virtual_q_dot, const Eigen::Quaterniond& base_quat, const double hz, const double& control_time);
 
     void setEnable(bool enable);
     void compute();
-    void observationAllocation(const VectorQd& current_q, const VectorQd& current_q_dot, const Vector6d& virtual_q_dot, const Eigen::Quaterniond& base_quat);
+    //void observationAllocation(const VectorQd& current_q, const VectorQd& current_q_dot, const Vector6d& virtual_q_dot, const Eigen::Quaterniond& base_quat);
     void updateControlMask(unsigned int *mask);
     void writeDesired(const unsigned int *mask, VectorQd& desired_torque);
     void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
@@ -31,7 +36,7 @@ class RLController
     void processObservation();
     void feedforwardPolicy();
 
-    Eigen::VectorXd quat_rotate_inverse(const Eigen::Quaterniond& q, const Eigen::Vector3d& v);
+    Eigen::VectorXd quat_rotate(const Eigen::Quaterniond& q, const Eigen::Vector3d& v);
 
 private:
     const double hz_;
@@ -42,6 +47,8 @@ private:
     const VectorQd& current_q_dot_;
     const Vector6d& virtual_q_dot_;
     const Eigen::Quaterniond& base_quat_;//IMU data with filter
+    //const tf::Quaternion& base_quat_;//changed here    
+
     Vector3d gravity = Vector3d(0, 0, -9.81);
 
     torch::jit::script::Module module;
@@ -102,7 +109,7 @@ private:
 
 
     
-    /* 원래 주신 옛날 RL 코드
+    /* 원래 주신 옛날 RL 코드 
 public:
     static constexpr unsigned int PRIORITY = 8;
 

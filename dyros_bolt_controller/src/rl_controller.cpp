@@ -53,7 +53,7 @@ void RLController::initVariable()
     state_.resize(num_cur_state, 1);//actually we don't use this
     state_cur_.resize(num_cur_state, 1);
     //state_mean_.resize(num_cur_state, 1);
-    state_var_.resize(num_cur_state, 1);
+    state_var_.resize(num_cur_state, 1);//actually we don't use this
     state_buffer_.resize(num_cur_state * num_state_hist, 1);//num_state_skip 안 두었음.--> 얼만큼의 state을 skip할지 몰라서 --> 박사님께 말하기
 
     //q_dot_lpf_.setZero();//actually we don't use this
@@ -200,7 +200,8 @@ void RLController::processObservation()
     int data_idx = 0;
 
     // Projected gravity 
-    Eigen::Vector3d projected_gravity = quat_rotate_inverse(base_quat_, Eigen::Vector3d(0, 0, -9.81));//--> 박사님께 여쭤보기 챗 지피티에서 알려준 계산법이 두 개인데, 정반대의 결과임
+    Eigen::Vector3d projected_gravity = quat_rotate(base_quat_, Eigen::Vector3d(0, 0, -1));//--> 박사님께 여쭤보기 왜 0,0,-1? Not 0,0,-9.81
+
     state_cur_(data_idx++) = projected_gravity(0);//state_curr_(0)=projected_gravity(0);
     state_cur_(data_idx++) = projected_gravity(1);
     state_cur_(data_idx++) = projected_gravity(2);
@@ -208,7 +209,7 @@ void RLController::processObservation()
     // Command (x, y, yaw)
     state_cur_(data_idx++) = target_vel_x_;
     state_cur_(data_idx++) = target_vel_y_;
-    state_cur_(data_idx++) = target_yaw_; 
+    state_cur_(data_idx++) = target_yaw_;
 
     // Joint positions --> extracting without ankle pinjoint
     for (int i = 0; i < 3; i++)
@@ -281,7 +282,7 @@ void RLController::compute()
         }
         for (int i = 0; i < num_action; i++)
         {
-            desired_torque_(i) = DyrosMath::minmax_cut(rl_action_(i)*torque_bound_(i), -torque_bound_(i), torque_bound_(i));//torque 위 아래로 짜르는거 bound 줘서            
+            desired_torque_(i) = DyrosMath::minmax_cut(rl_action_(i)*torque_bound_(i), -torque_bound_(i), torque_bound_(i));//torque 위 아래로 짜르는거 bound 줘서 --> say it to 박사님      
         }
     }
 }
@@ -318,12 +319,28 @@ void RLController::writeDesired(const unsigned int *mask, VectorQd& desired_torq
     }
 }
 
-Eigen::VectorXd RLController::quat_rotate_inverse(const Eigen::Quaterniond& q, const Eigen::Vector3d& v)
+
+
+Eigen::VectorXd RLController::quat_rotate(const Eigen::Quaterniond& q, const Eigen::Vector3d& v)
 {
-    Eigen::Quaterniond q_inv = q.conjugate();
-    Eigen::Vector3d rotated_v = q_inv * v;
-    return rotated_v.cast<double>();
+    // q is the quaternion and v is the vector to be rotated
+    Eigen::Vector3d q_vec = q.vec(); // Extract the vector part of the quaternion
+    double q_w = q.w(); // Extract the scalar part of the quaternion
+
+    // a = v * (2.0 * q_w * q_w - 1.0)
+    Eigen::Vector3d a = v * (2.0 * q_w * q_w - 1.0);
+
+    // b = 2.0 * q_w * q_vec.cross(v)
+    Eigen::Vector3d b = 2.0 * q_w * q_vec.cross(v);
+
+    // c = 2.0 * q_vec * q_vec.dot(v)
+    Eigen::Vector3d c = 2.0 * q_vec * q_vec.dot(v);
+
+    // Return the rotated vector
+    return a + b + c;
 }
+
+
 
 //박사님 저희는 joystick으로 명령 안 주지만 target_을 정해주고자 이렇게 했어요.
 void RLController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)

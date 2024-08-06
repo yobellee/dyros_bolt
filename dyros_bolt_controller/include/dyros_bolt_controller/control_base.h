@@ -127,6 +127,8 @@ protected:
 
     tf::Quaternion imu_data_; ///< IMU data with filter
     Eigen::Quaterniond base_quat_; ///< IMU data without filter
+    //tf::Quaternion base_quat_;///< IMU data without filter//changed here
+
     Vector4d imu_data_quat; 
     Vector3d gyro_; // current gyro sensor values
     Vector3d accelometer_; // current accelometer values
