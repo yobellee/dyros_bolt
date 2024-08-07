@@ -59,7 +59,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   //"/dyros_bolt/joint_command 토픽"을 subscribe하는 joint_command_sub_이라는 subscribe class 생성.| buffer size:3 | &ControlBase::jointCommandCallback: Address of the callback function to execute when a message arrives | "/dyros_bolt/joint_command": topic name. | this: pointer to the instance of the "ControlBase" class->this앞의 항에 해당하는 함수가 ControlBase의 객체에 접근할 수 있도록 하기 위해서.
   joint_command_sub_ = nh.subscribe("/dyros_bolt/joint_command", 3, &ControlBase::jointCommandCallback, this);
   custom_command_sub_ = nh.subscribe("/dyros_bolt/custom_command",3, &ControlBase::customCommandCallback,this);
-  rl_command_sub_ = nh.subscribe("/dyros_bolt/rl_command",3, &ControlBase::rlCommandCallback,this);
+  rl_command_sub_ = nh.subscribe("/dyros_bolt/rl_command",3, &ControlBase::rlCommandCallback,this); //이전에 conflict는 Topic name이 같았기 때문
   shutdown_command_sub_ = nh.subscribe("/dyros_bolt/shutdown_command", 1, &ControlBase::shutdownCommandCallback,this);
   parameterInitialize();
   model_.test(); //test를 통해서, 대충 예상한 값으로 나오는지 확인.
@@ -173,7 +173,7 @@ void ControlBase::compute()
   // Torque Control --> 'PD control' + 'feedforward'
   // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
   // for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
-  // //박사님 질문--> 여기 그냥 아예 지우면 될듯, 앞에서 "rl_controller_.writeDesired(control_mask_, desired_torque_);"로 torque값 받으니까.oo
+  // 여기 그냥 아예 지워: why--> 앞에서 "rl_controller_.writeDesired(control_mask_, desired_torque_);"로 torque값 받으니까.
   // {
   //   desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]) + model_.command_Torque(i);// don't think about filterd
   //   // desired_torque_[i] = desired_q_(i);
@@ -301,6 +301,8 @@ void ControlBase::customCommandCallback(const dyros_bolt_msgs::CustomCommandCons
   }
 }
 
+
+// 박사님 제가 이게 conflict를 일으킨다 해서 지웠거든요?? --> conflict원인 target subscribe한 것도 똑같은 Topic name이었음.
 void ControlBase::rlCommandCallback(const std_msgs::BoolConstPtr& msg)
 {
   rl_controller_.setEnable(msg->data);

@@ -31,7 +31,7 @@ class RLController
     void updateControlMask(unsigned int *mask);
     void writeDesired(const unsigned int *mask, VectorQd& desired_torque);
     void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
-
+    void rlCmdCallback(const std_msgs::Float64MultiArray::ConstPtr& msg);//박사님 얘랑 conflict 된거였어요
     void initVariable();
     void loadNetwork();
     void processObservation();
@@ -56,7 +56,7 @@ private:
     Eigen::Matrix<double, 6, 1> torque_bound_;
     VectorQd desired_torque_;
 
-    bool rl_enable_ = true;//changed (false였는데 true로)
+    bool rl_enable_ = false;//changed (false였는데 true로)
 
     torch::Tensor observation;
     torch::Tensor action;
@@ -94,6 +94,7 @@ private:
 
     ros::NodeHandle nh_;
     ros::Subscriber joy_sub_;
+    ros::Subscriber rl_cmd_sub_;
     //ros::Publisher torque_pub_;//changed here
 
     double target_vel_x_ = 0.0;

@@ -1,6 +1,6 @@
 <mujoco model="bolt">
     <include file="simulation_scene.xml"/>
-	<option gravity= "0 0 0"/>
+	<!-- <option gravity= "0 0 0"/> -->
 
     <asset>
         <mesh name="bolt_body" file="bolt_body.stl" />

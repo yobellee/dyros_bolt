@@ -9,11 +9,11 @@ RLController::RLController(const VectorQd& current_q, const VectorQd& current_q_
 {
     desired_torque_.setZero();
 
-
-
     initVariable();
     loadNetwork();
-    //torque_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("desired_torque", 10);//changed here
+
+    rl_cmd_sub_ = nh_.subscribe<std_msgs::Float64MultiArray>("/dyros_bolt/rl_vel_command", 10, &RLController::rlCmdCallback, this); // Add this line->to not conflict, you have to change the topic name differently
+    std::cout<<"checking initial targets:"<<target_vel_x_<<"  "<<target_vel_y_<<"  "<<target_yaw_<<std::endl<<std::endl;
     joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &RLController::joyCallback, this);
 }
 
@@ -45,14 +45,14 @@ void RLController::initVariable()
     state_cur_.resize(num_cur_state, 1);
     //state_mean_.resize(num_cur_state, 1);
     state_var_.resize(num_cur_state, 1);//actually we don't use this
-    state_buffer_.resize(num_cur_state * num_state_hist, 1);//num_state_skip 안 두었음.--> 얼만큼의 state을 skip할지 몰라서 --> 박사님께 말하기ㅇㅇ
+    state_buffer_.resize(num_cur_state * num_state_hist, 1);//num_state_skip 안 두었음.--> 얼만큼의 state을 skip할지 몰라서 -->이게 맞대 굿
     
     //q_dot_lpf_.setZero();//actually we don't use this
 
     //Initializing q without consiering ankle!
     //q_init_ << 0.0, 0.0, -0.24, 0.6, -0.36, 0.0;
 
-    torque_bound_ << 2.5, 2.5, 2.5, 2.5, 2.5, 2.5;//To 박사님: Torque bound는 이렇게 주었습니다.     
+    torque_bound_ << 2.5, 2.5, 2.5, 2.5, 2.5, 2.5;//Torque bound는 bolt urdf 보고 함.     
 }
 
 void RLController::loadNetwork()
@@ -189,13 +189,14 @@ void RLController::processObservation()
     int data_idx = 0;
 
     // Projected gravity 
-    Eigen::Vector3d projected_gravity = quat_rotate(base_quat_, Eigen::Vector3d(0, 0, -1));//--> 박사님께 여쭤보기 왜 0,0,-1? Not 0,0,-9.81
+    Eigen::Vector3d projected_gravity = quat_rotate(base_quat_, Eigen::Vector3d(0, 0, -1));//0,0,-1? Not 0,0,-9.81 -->방향만 중요
 
     state_cur_(data_idx++) = projected_gravity(0);//state_curr_(0)=projected_gravity(0);
     state_cur_(data_idx++) = projected_gravity(1);
     state_cur_(data_idx++) = projected_gravity(2);
-
+  
     // Command (x, y, yaw)
+    std::cout<<"checking targets:"<<target_vel_x_<<"  "<<target_vel_y_<<"  "<<target_yaw_<<std::endl<<std::endl;
     state_cur_(data_idx++) = target_vel_x_;
     state_cur_(data_idx++) = target_vel_y_;
     state_cur_(data_idx++) = target_yaw_;
@@ -232,7 +233,7 @@ void RLController::processObservation()
     state_buffer_.block(0, 0, num_cur_state * (num_state_hist - 1), 1) = state_buffer_.block(num_cur_state, 0, num_cur_state * (num_state_hist - 1), 1);
 
     //맨 뒤에는 최신 state update
-    //mean값이 들어있는 파일이 없어서 normalize하진 않음--> 박사님께 말하기
+    //mean값이 들어있는 파일이 없어서 normalize하진 않음--> ㅇㅇ 이게 맞음
     state_buffer_.block(num_cur_state * (num_state_hist - 1), 0, num_cur_state, 1) = state_cur_;
     //state_buffer_ = (state_cur_ - state_mean_).array() / state_var_.cwiseSqrt().array();
 }
@@ -278,12 +279,9 @@ void RLController::compute()
 
         for (int i = 0; i < num_action; i++)
         {
-            desired_torque_(i) = DyrosMath::minmax_cut(rl_action_(i)*torque_bound_(i), -torque_bound_(i), torque_bound_(i));//torque 위 아래로 짜르는거 bound 줘서 --> say it to 박사님      
+            desired_torque_(i) = DyrosMath::minmax_cut(rl_action_(i)*torque_bound_(i), -torque_bound_(i), torque_bound_(i));//torque 위 아래로 짜르는거 bound 줘서     
             //std::cout << "desired_torque_[" << i << "]: " << desired_torque_(i) << std::endl;
             //std::cout << "rl_action_[" << i << "]: " << rl_action_(i) << std::endl;            
-            //std::cout << "target_vel_x_, target_vel_y_, target_yaw_"<<target_vel_x_<<" "<<target_vel_y_<<target_yaw_<<std::endl<<std::endl;
-            // Add torque values to the message
-            //torque_msg.data.push_back(desired_torque_(i)); //changed here           
         }
         //Publish the message
         //torque_pub_.publish(torque_msg);//changed here
@@ -353,7 +351,7 @@ Eigen::VectorXd RLController::quat_rotate(const Eigen::Quaterniond& q, const Eig
 
 
 
-//박사님 저희는 joystick으로 명령 안 주지만 target_을 정해주고자 이렇게 했어요.
+//oystick으로 명령 안 주지만 target_을 정해주고자 이렇게 했어요. 
 void RLController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
     target_vel_x_ = DyrosMath::minmax_cut(0.5 * joy->axes[1], -0.2, 0.5);
@@ -361,7 +359,15 @@ void RLController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     target_yaw_ = DyrosMath::minmax_cut(0.5 * joy->axes[3], -M_PI, M_PI); // Example axis for yaw control
 }
 
-
+void RLController::rlCmdCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)//얘가 conflict가 있었던 거였어요 to 박사님.
+{
+    if (msg->data.size() == 3)
+    {
+        target_vel_x_ = msg->data[0];
+        target_vel_y_ = msg->data[1];
+        target_yaw_ = msg->data[2];
+    }
+}
 
 
 

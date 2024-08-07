@@ -101,7 +101,8 @@ private:
     void customCommandCallback(const dyros_bolt_msgs::CustomCommandConstPtr& msg);
     void shutdownCommandCallback(const std_msgs::StringConstPtr& msg);
     void jointControlActionCallback(const dyros_bolt_msgs::JointControlGoalConstPtr &goal);   
-    void rlCommandCallback(const std_msgs::BoolConstPtr& msg); 
+    
+    void rlCommandCallback(const std_msgs::BoolConstPtr& msg); //conflict 원인: 똑같은 이름의 Topic에서 받고 있었기 때문. 
 
 protected:
     realtime_tools::RealtimePublisher<dyros_bolt_msgs::JointState> joint_state_pub_; 
