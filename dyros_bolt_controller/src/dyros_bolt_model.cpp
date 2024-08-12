@@ -40,8 +40,8 @@ DyrosBoltModel::DyrosBoltModel() :
 
     std::string desc_package_path = ros::package::getPath("dyros_bolt_description");
     // std::string urdf_path = desc_package_path + "/robots/bolt.urdf";
-    std::string urdf_path = desc_package_path + "/robots/bolt_with_passive.urdf";
-
+    std::string urdf_path = desc_package_path + "/robots/bolt_with_passive.urdf"; 
+    
     ROS_INFO("Loading DYROS BOLT description from = %s",urdf_path.c_str());
     RigidBodyDynamics::Addons::URDFReadFromFile(urdf_path.c_str(), &model_, true, false);
     ROS_INFO("Successfully loaded.");

@@ -9,8 +9,7 @@ JointController::JointController(const VectorQd& current_q, const VectorQd &curr
   current_time_(control_time), total_dof_(DyrosBoltModel::HW_TOTAL_DOF),
   start_time_{}, end_time_{}
 {
-  //testing what value control_time has
-  //std::cout<<"Yobel testing the value of control_time_: "<<control_time<<std::endl;
+
 }
 
 void JointController::compute()

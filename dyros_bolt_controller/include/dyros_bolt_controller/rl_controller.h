@@ -54,7 +54,8 @@ private:
     torch::jit::script::Module module;
     
     Eigen::Matrix<double, 6, 1> torque_bound_;
-    VectorQd desired_torque_;
+    Vector6d desired_torque_rl;
+
 
     bool rl_enable_ = false;//changed (false였는데 true로)
 
@@ -95,9 +96,9 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber joy_sub_;
     ros::Subscriber rl_cmd_sub_;
-    //ros::Publisher torque_pub_;//changed here
 
-    double target_vel_x_ = 0.0;
+
+    double target_vel_x_ = 0.03; //여기 젤 최근에 바꿈 2024.08.09
     double target_vel_y_ = 0.0;
     double target_yaw_ = 0.0;
 
@@ -129,7 +130,7 @@ public:
         }
         std::cout << "RL Controller is initialized" << std::endl;
 
-        observation = torch::zeros({1, 24});//[yobel update]
+        observation = torch::zeros({1, 24});//
         action = module.forward({observation}).toTensor();
         action = action.to(torch::kDouble);
         auto data_ptr = action.data_ptr<double>();
@@ -141,7 +142,7 @@ public:
         }
         std::cout << "RL Controller is initialized" << std::endl;
         //testtest
-        //std::cout<<"Yobel testing the value of control_time_: "<<control_time<<std::endl;
+        
         std::cout << "action torq: " << desired_torque__.transpose()<< std::endl;
         std::cout << "action torq: " << this->desired_torque_.transpose()<< std::endl;
     }
@@ -175,7 +176,7 @@ private:
     torch::Tensor observation;
     torch::Tensor action;
 
-    int observation_size = 24;//[yobel update]
+    int observation_size = 24;//
     int action_size;*/
 };
 

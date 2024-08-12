@@ -17,6 +17,10 @@ mujoco_interface::mujoco_interface(ros::NodeHandle &nh, double Hz):
     'ctrl_mode': local variable that will store the retrieved parameter's value.
     "torque": Default value of 'ctrl_mode', if the parameter doesn't exist on the server.
     */
+    // for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
+    // {
+    // std::cout << "desired_q_MUJOCO생성자초기부분["<<i<<"] : " << desired_q_[i] << std::endl;
+    // }
 
     simulation_running_= true;
 
@@ -51,6 +55,10 @@ mujoco_interface::mujoco_interface(ros::NodeHandle &nh, double Hz):
     ROS_INFO("Mujoco Ros interface Connected");
     // init_shm(shm_msg_key, shm_id_, &tc_shm_);
     // prog_shutdown = &tc_shm_->shutdown;
+    // for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
+    // {
+    // std::cout << "desired_q_MUJOCO생성자마지막부분["<<i<<"] : " << desired_q_[i] << std::endl;
+    // }
 }
 
 void mujoco_interface::simready()
@@ -60,7 +68,6 @@ void mujoco_interface::simready()
     {   /*while문 안에 있는 이 두 line의 목적: to synchronize the startup of the
         controller and the simulation. */
         //mujoco_ready가 true가 되면 이 loop 탈출
-
         ros::spinOnce();//to update the 'mujoco_ready' flag based on messages received from the simulation
         poll_rate.sleep();// 100Hz loop rate 맞추려고
     }
@@ -104,6 +111,7 @@ void mujoco_interface::jointStateCallback(const sensor_msgs::JointStateConstPtr 
         for(int i=0;i<total_dof_;i++)
         {
             desired_q_(i)=q_(i);
+            //std::cout<<"This is running NOW!!!!!"<<std::endl;
         }
         mujoco_init_receive = true;
     }
@@ -224,7 +232,7 @@ void mujoco_interface::update()
 void mujoco_interface::compute()
 {
     ControlBase::compute();
-    // std::cout << desired_q_ << std::endl;
+    //std::cout <<"MUJOCO computed desired: "<< desired_q_ << std::endl;
 }
 
 void mujoco_interface::writeDevice()
@@ -259,7 +267,8 @@ void mujoco_interface::writeDevice()
               // mujoco_joint_set_msg_.torque[i] = model_.command_Torque(i);
               mujoco_joint_set_msg_.torque[i] = desired_torque_(i);
               // mujoco_joint_set_msg_.torque[i] = 0;
-              // std::cout << "desired torq: " <<desired_torque_(i) << std::endl;
+            //   std::cout << "mujocosim time: "<<mujoco_sim_time<< std::endl;
+              std::cout << "mujocowriteTorque NOW: " <<desired_torque_(i) << std::endl;
             }
             mujoco_joint_set_msg_.header.stamp = ros::Time::now();
             mujoco_joint_set_msg_.time = mujoco_sim_time;

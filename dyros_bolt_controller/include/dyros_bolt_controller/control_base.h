@@ -58,8 +58,33 @@ class ControlBase
 {
 public:
     ControlBase(ros::NodeHandle &nh, double Hz);
-    virtual ~ControlBase(){}
+    virtual ~ControlBase(){/*여기 바꿈*/closeLogFile();}
     // Default User Call function
+
+    //Initialization and close of the log file//여기 수정함.
+    void initLogFile(const std::string& file_path) {
+        log_file_.open(file_path);
+        if (!log_file_.is_open()) {
+            throw std::runtime_error("Unable to open log file");
+        }
+        log_file_ << "time";
+        for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++) {
+            log_file_ << ",q_[" << i << "]";
+        }
+        for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++) {
+            log_file_ << ",desired_q_[" << i << "]";
+        }
+        for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++) {
+            log_file_ << ",desired_torque_[" << i << "]";
+        }
+        log_file_ << "\n"; // header
+    }
+    void closeLogFile() {
+        if (log_file_.is_open()) {
+        log_file_.close();
+        }
+    }    
+
     void parameterInitialize(); // initialize all parameter function(q,qdot,force else...)
     virtual void readDevice(); // read device means update all subscribed sensor data and user command
     virtual void update(); // update controller based on readdevice
@@ -77,9 +102,12 @@ public:
     std::vector<double> pos_kp;
     std::vector<double> pos_kv;
     std::vector<double> k_tau;
-
+    
+    Eigen::Matrix<double, 8, 1> torque_max_bound_;
 
 private:
+    //여기 log_file_ 만듦//여기 수정함.
+    std::ofstream log_file_; // Log file to log data of q_, desired_q_, desired_torque_
     void makeIDInverseList();
 
     double Hz_; ///< control

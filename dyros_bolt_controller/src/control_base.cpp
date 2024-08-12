@@ -11,8 +11,15 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   rl_controller_(q_, q_dot_, mujoco_virtual_dot_, base_quat_, Hz, control_time_),
   joint_control_as_(nh, "/dyros_bolt/joint_control", false)
 {
+  initLogFile("/home/dyros2/bolt_ws/src/dyros_bolt/dyros_bolt_controller/logfile_q_and_torque/log_q_and_torque.csv");
+  torque_max_bound_ << 0.05, 1.5, 2.0, 0.01, 
+                        0.05, 1.5, 2.0, 0.01;
+ 
+  //for (int i = 0; i < 8; ++i) {std::cout<<"control_mask_ at initiallizer: "<<control_mask_[i]<<std::endl;}
   
   makeIDInverseList();
+
+  //for (int i = 0; i < 8; ++i) {std::cout<<"control_mask_ after makeIDInverseList: "<<control_mask_[i]<<std::endl;}
 
   //joint_control_as_: represents the action server that handles 'joint_control' actions
   joint_control_as_.start();// begin processing incoming action goals
@@ -43,6 +50,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   nh.getParam("Kp", pos_kp);//pos_kp라는 variable에, Kp라는 parameter가 저장된다.
   nh.getParam("Kv", pos_kv);
   nh.getParam("K_tau", k_tau);
+
   // for (size_t i = 0; i < k_tau.size(); ++i) {
   //   k_tau[i] = 0.22;
   // }
@@ -63,6 +71,7 @@ ControlBase::ControlBase(ros::NodeHandle &nh, double Hz) :
   shutdown_command_sub_ = nh.subscribe("/dyros_bolt/shutdown_command", 1, &ControlBase::shutdownCommandCallback,this);
   parameterInitialize();
   model_.test(); //test를 통해서, 대충 예상한 값으로 나오는지 확인.
+  
 }
 
 
@@ -96,7 +105,11 @@ void ControlBase::parameterInitialize()
 }
 
 void ControlBase::readDevice()
-{
+{   
+  // for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
+  // {
+  //   std::cout << "desired_q_readDevice초기["<<i<<"] : " << desired_q_[i] << std::endl;
+  // }
   ros::spinOnce();//It processes a single round of callbacks for incoming messages. Essentially, it checks for new data (messages) that might have arrived from subscribed topics,   services, or actions.
 
   // Action
@@ -108,7 +121,7 @@ void ControlBase::readDevice()
 }
 
 void ControlBase::update()
-{
+{ 
   //q_ext_는 component가 12개인 vector --> 얘 쓰레기 코드래, 안 쓴데, q_ext(실제 q_에 노이즈 낀거임)는 나의 고려사항이 아님
   // q_ 는 요소 8개인 vector-> 6개 모터 + pinjoint 2개
   //vector 자기 자신을 dot product했을 때 0이 나오는 것은 벡터의 모든 요소가 0이라는 소리. --> 0인 벡터가 있는지 체크하는 if문 
@@ -142,7 +155,7 @@ void ControlBase::update()
   //이 코드는 'q_vjoint'의 "pelvis coord. 이후의 7번째 요소~14번째의 요소"를, 'q_'의 값으로 설정하는 코드.
 
 
-  // q_dot_filtered_ = q_dot_; --> we don't have to consider q_dot_filtered in this scope
+  q_dot_filtered_ = q_dot_; //--> we don't have to consider q_dot_filtered in this scope
   DyrosMath::lowPassFilter<DyrosBoltModel::HW_TOTAL_DOF>(q_dot_, q_dot_filtered_, 1.0 / Hz_, 0.05);
   q_vjoint_dot.segment<DyrosBoltModel::MODEL_DOF>(6) = q_dot_filtered_.head<DyrosBoltModel::MODEL_DOF>();
 
@@ -154,7 +167,41 @@ void ControlBase::update()
 
 
 void ControlBase::compute()
-{
+{ 
+  //2024.08.09 여기 주석 처리함 log data
+  
+
+  // desired_q_<< 0, 0.85, -1.8, 0.85, 0, 0.85, -1.8, 0.85;
+  // desired_q_<<  0, 0.436332313, -0.872664626, 0.436332313, 
+  //               0, 0.436332313, -0.872664626, 0.436332313;
+  desired_q_<<  0, 0.639, -1.4, 0.754, 
+                0, 0.639, -1.4, 0.754;                    
+  static double log_time = control_time_; // Track the time//
+  //std::cout<<"제어시간"<<control_time_<<std::endl;
+  //if(log_time>0.05)
+  // for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
+  // {
+  //   std::cout << "현재 q_compute초기["<<i<<"] : " << q_[i] << std::endl;
+  // } 
+  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
+  {
+    desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) 
+                         - pos_kv[i] * (q_dot_filtered_[i]);  // Damping term 
+
+    desired_torque_(i) = DyrosMath::minmax_cut(desired_torque_(i), -torque_max_bound_(i), torque_max_bound_(i));//torque 위 아래로 짜르는거 bound 줘서    
+    //desired_torque_[i] = desired_q_(i);
+    //desired_torque_[i] = model_.command_Torque(i);
+    // std::cout << "q_dot_["<<i<<"] is : " << q_dot_[i] << std::endl; //여기
+    // std::cout << "q_dot_filtered_["<<i<<"] is : " << q_dot_filtered_[i] << std::endl; //여기
+  } 
+  // std::cout << "desired_torque_compute초기: " << desired_torque_.transpose() << std::endl; //여기
+  
+  // 2024.08.09 여기 주석 처리함 log data --> 여기까지
+  
+
+
+  
+
   // start_time_에서 end_time_까지 가기 위한 중간중간의 desired_q 값 계속 계산하는거.-> 상황에 따라서, 선택하는 compute가 다름
   joint_controller_.compute();
   custom_controller_.compute();
@@ -169,20 +216,38 @@ void ControlBase::compute()
   joint_controller_.writeDesired(control_mask_, desired_q_);
   custom_controller_.writeDesired(control_mask_, desired_q_); 
   rl_controller_.writeDesired(control_mask_, desired_torque_);
+  
 
-  // Torque Control --> 'PD control' + 'feedforward'
-  // std::cout << "desired_q_ : " << desired_q_.transpose() << std::endl;
-  // for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++)// 8번 반복 
-  // 여기 그냥 아예 지워: why--> 앞에서 "rl_controller_.writeDesired(control_mask_, desired_torque_);"로 torque값 받으니까.
-  // {
-  //   desired_torque_[i] = pos_kp[i] * (desired_q_[i] - q_[i]) + pos_kv[i] * (q_dot_filtered_[i]) + model_.command_Torque(i);// don't think about filterd
-  //   // desired_torque_[i] = desired_q_(i);
-  //   // desired_torque_[i] = model_.command_Torque(i);
-  //   // std::cout << "desired_torque_[i] : " << desired_torque_.transpose() << std::endl;
-  // }
+
+
+
+// 2024.08.09 여기 주석 처리함 log data
+   std::cout<<"control_time_:"<<control_time_<<std::endl;
+   std::cout<<"제어시간"<<log_time<<std::endl;
+  // //------- Log the data ----------// 여기 수정함
+  log_file_ << std::fixed << std::setprecision(4) << log_time;
+  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++) {
+    log_file_ << "," << q_[i];
+  }
+  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++) {
+    log_file_ << "," << desired_q_[i];
+  }
+  for (int i = 0; i < DyrosBoltModel::MODEL_DOF; i++) {
+    log_file_ << "," << desired_torque_[i];
+  }
+  log_file_ << "\n";  
+  //2024.08.09 여기 주석 처리함 log data --> 여기까지임.
+
+
+
+
+
 
   tick_ ++;//'tick': compute 함수가 몇번 불렸는지 count해주는 놈.
   control_time_ = tick_ / Hz_;// keeps track of the elapsed time since the start of the control loop in seconds.
+  
+  
+  log_time=control_time_; // 2024.08.09 여기 주석 처리함 log data
 }
 
 void ControlBase::reflect()
